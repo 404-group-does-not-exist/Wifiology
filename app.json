@@ -1,4 +1,7 @@
 {
+  "name": "Wifiology",
+  "description": "Node.js app using Express 4",
+  "repository": "https://github.com/404-group-does-not-exist/Wifiology",
   "addons": [
 
   ],
