@@ -1,0 +1,5 @@
+# no need to commit node modules
+node_modules/
+
+# Ignore TESTs for now - not in use
+test.js
