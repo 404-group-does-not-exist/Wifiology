@@ -29,7 +29,7 @@
     </section>
 
     <!-- section menu start -->
-
+<!--TODO: copy menu/nav code to nav.ejs and include as a partial -->
     <section class="section-menu">
     	<div class="navbar navbar-default main-nav" role="navigation" >
     		<div class="container" >
@@ -42,7 +42,7 @@
     				</button>
 
 					<blockquote>
-					  <p><a href="#" class="navbar-brand">mybook</a>
+					  <p><a href="#" class="navbar-brand">Wifiology</a>
 				      </p>
 				  </blockquote>
     			</div>  <!-- navbar-header end -->
@@ -55,7 +55,7 @@
     					<li><a href="#section-skill">Comments</a></li>
     					<li><a href="#section-resume">History</a></li>
     					<li><a href="#section-portfolio">Portfolio </a></li>
-    					<li><a href="#section-contact">Contact me </a></li>
+    					<li><a href="#section-contact">Contact </a></li>
     				</ul>
     			</div><!-- /.navbar-collapse -->
     		</div><!-- /.container-fluid -->
@@ -200,7 +200,9 @@
 
 	<!-- section testimonial end -->
 
+ <!-- TODO: probably get rid of this whole portfolio section - may eliminate some js dependencies in /public/js -->
 	<!-- section portfolio start -->
+
 
 	<section id="section-portfolio" class="section-padding">
 		<div class="container">
@@ -296,7 +298,9 @@
 	<!-- section portfolio endt -->
 
 	<!-- section contact start -->
-
+ <!-- TODO: Decide what to with the contact form - functionality will probably
+            Be implemented differently than this template had intended
+            This will potentially further release js and/or css dependecies -->
 	<section id="section-contact" class="section-padding">
 		<div class="container">
 			<div class="row">
@@ -308,7 +312,8 @@
 
 				<div class="col-md-6 col-sm-6 wow fadeInRight">
 					<div class="contact-form">
-								<!--NOTE: Update your email Id in "contact_me.php" file in order to receive emails from your contact form-->
+								<!--NOTE: Update your email Id in "contact_me.php" file in order to receive emails from your contact form
+                    Also NOTE: we will be implementing form functionality differently that this template recommends  so above note is possibly irrelevant -->
 		<form name="sentMessage" id="contactForm contact-box"  novalidate>
 		<div class="control-group">
 		<div class="controls">
@@ -361,6 +366,7 @@
 	</section>
 	<!-- section contact end -->
 
+<!--TODO: copy footer code to footer.ejs and include as a partial -->
 	<footer id="section-footer">
 		<div class="container">
 			<div class="row">
