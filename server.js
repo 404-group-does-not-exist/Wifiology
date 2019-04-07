@@ -1,5 +1,5 @@
 const express = require('express')
-const foobar_routes = require('routes/foobar.js'); //test api
+//const foobar_routes = require('routes/foobar.js'); //test api
 const path = require('path')
 const PORT = process.env.PORT || 5000
 const { Pool } = require('pg');
@@ -25,5 +25,5 @@ express()
           res.send("Error " + err);
       }
   })
-  .get('/foobar',foobar_routes.foobar)  
+  //.get('/foobar',foobar_routes.foobar)  
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
