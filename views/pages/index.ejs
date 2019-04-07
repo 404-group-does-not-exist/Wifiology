@@ -2,6 +2,14 @@
 <html lang="en">
   <head>
 	  <% include ../partials/header.ejs %>
+
+	  <% include ../partials/section-banner.ejs %>
+	  <% include ../partials/section-menu.ejs %>
+	  <% include ../partials/section-overview.ejs %>
+	  <% include ../partials/history-graph.ejs %>
+	  <% include ../partials/ssid.ejs %>
+	  <% include ../partials/csv-email.ejs %>
+
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -11,31 +19,21 @@
   </head>
    <body data-spy="scroll" data-target=".main-nav">
 
-    <section id="section-banner">
-    	<div class="container">
-    		<div class="row">
-    			<div class="banner-content wow fadeInRight">
-    				<h2 class="title">
-	    					Wifiology<br/>
-							<span>
-				Error 404: Group Name Not Found <br/>
-							an unexist group from US	</span>
-    				</h2>
 
 
-    			</div>
-    		</div>
-    	</div>
-    </section>
-    <% include ../partials/section-menu.ejs %>
-    <% include ../partials/section-overview.ejs %>
-    <% include ../partials/section-profile.ejs %>
-    <% include ../partials/section-skill.ejs %>
-    <% include ../partials/section-resume.ejs %>
-    <% include ../partials/section-portfolio.ejs %>
-    <% include ../partials/section-contact.ejs %>
-    <% include ../partials/section-footer.ejs %>
-    
+<!--TODO: copy footer code to footer.ejs and include as a partial -->
+	<footer id="section-footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 text-center">
+
+					<h4>Copyright &copy; 2019. 404 Group name do not exist All rights reserved</h4>
+
+
+				</div>
+			</div>
+		</div>
+	</footer>
 
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
