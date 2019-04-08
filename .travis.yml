@@ -11,7 +11,8 @@ addons:
       - postgresql-10
       - postgresql-client-10
 before_script:
-  - psql - c 'create database wifilogy;' -U postgres
+  - psql -c 'create database wifilogy;' -U postgres
+  - psql
 env:
   global:
     - PGPORT=5433
