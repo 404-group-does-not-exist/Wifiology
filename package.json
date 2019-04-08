@@ -8,8 +8,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha test/unit/* && node test/integration/test.js",
-    "test:travis": "mocha test/unit/*"
+    "test": "mocha test/unit/* && tape test/integration/*"
   },
   "dependencies": {
     "ejs": "^2.5.6",
