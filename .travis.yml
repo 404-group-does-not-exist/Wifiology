@@ -8,5 +8,5 @@ addons:
   postgresql: "9.6"
 env:
   global:
-    - PGPORT=5433
-    - DATABASE_URL=postgresql://postgres@127.0.0.1:5433/wifiology
+    - PGPORT=5432
+    - DATABASE_URL=postgresql://postgres@127.0.0.1:5432/wifiology
