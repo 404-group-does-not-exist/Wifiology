@@ -5,3 +5,5 @@ node_modules/
 test.js
 
 npm-debug.log
+
+.DS_store
