@@ -24,11 +24,12 @@ class WifiologyUser {
     }
 
     async verifyPassword(password) {
-        let saltBytes = this.passwordData.readUInt32BE(0);
-        let hashBytes = this.passwordData.length - saltBytes - 8;
-        let iterations = this.passwordData.readUInt32BE(4);
-        let salt = this.passwordData.slice(8, saltBytes + 8);
-        let hash = this.passwordData.toString('binary', saltBytes + 8);
+        let rawPassData = new Buffer(this.passwordData, 'base64');
+        let saltBytes = rawPassData.readUInt32BE(0);
+        let hashBytes = rawPassData.length - saltBytes - 8;
+        let iterations = rawPassData.readUInt32BE(4);
+        let salt = rawPassData.slice(8, saltBytes + 8);
+        let hash = rawPassData.toString('binary', saltBytes + 8);
 
         // verify the salt and hash against the password
         let testHash =  await cryptoAsync.pbkdf2Async(password, salt, iterations, hashBytes, hashAlgo);
@@ -38,7 +39,7 @@ class WifiologyUser {
 }
 
 function wifiologyUserFromRow(row){
-    return new WifiologyUser(row.userID, row.emailAddress, row.userName, row.userData, row.passwordData);
+    return new WifiologyUser(row.userid, row.emailaddress, row.username, row.userdata, row.passworddata);
 }
 
 async function createNewWifiologyUserWithPassword(emailAddress, userName, userData, password, userID=null){
@@ -56,9 +57,12 @@ async function createNewWifiologyUserWithPassword(emailAddress, userName, userDa
     salt.copy(combined, 8);
     hash.copy(combined, salt.length + 8);
 
-    return new WifiologyUser(userID, emailAddress, userName, userData, combined);
+    return new WifiologyUser(userID, emailAddress, userName, userData, combined.toString('base64'));
 }
 
-module.exports.WifiologyUser = WifiologyUser;
-module.exports.wifiologyUserFromRow = wifiologyUserFromRow;
-module.exports.createNewWifiologyUserWithPassword = createNewWifiologyUserWithPassword;
+
+module.exports = {
+    WifiologyUser: WifiologyUser,
+    wifiologyUserFromRow: wifiologyUserFromRow,
+    createNewWifiologyUserWithPassword: createNewWifiologyUserWithPassword
+};
