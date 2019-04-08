@@ -1,13 +1,13 @@
 language: node_js
-dist: xenial
+dist: trusty
 node_js:
   - "10"
 services:
   - postgresql
-addons:
-  postgresql: "9.6"
 before_script:
   - psql -c 'create database wifiology;' -U postgres
+addons:
+  postgresql: "9.6"
 env:
   global:
     - PGPORT=5433
