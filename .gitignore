@@ -7,3 +7,6 @@ test.js
 npm-debug.log
 
 .DS_store
+
+testconfig.env
+
