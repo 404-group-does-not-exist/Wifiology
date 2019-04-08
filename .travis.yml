@@ -9,4 +9,4 @@ addons:
 env:
   global:
     - PGPORT=5433
-    - DATABASE_URL=postgresql://postgres@127.0.0.1:5443/wifiology
+    - DATABASE_URL=postgresql://postgres@127.0.0.1:5433/wifiology
