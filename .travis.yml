@@ -9,7 +9,7 @@ addons:
 before_script:
   - psql -c "CREATE DATABASE wifiology;" -U postgres
 script:
-  - npm travis_test
+  - npm test:travis
 env:
   global:
     - PGPORT=5432

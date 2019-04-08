@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "mocha test/unit/* && node test/integration/test.js",
-    "travis_test": "mocha test/unit/*"
+    "test:travis": "mocha test/unit/*"
   },
   "dependencies": {
     "ejs": "^2.5.6",
