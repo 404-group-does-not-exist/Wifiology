@@ -62,7 +62,17 @@ let apiDoc = {
             description: 'A thing to play with OpenAPI and do a demo.'
         }
     },
-    paths: {}
+    paths: {},
+    securityDefinitions: {
+        BasicAuth: {
+            type: "basic"
+        },
+        ApiKeyAuth: {
+            type: "apiKey",
+            in: "header",
+            name: "X-API-Key"
+        }
+    }
 };
 
 module.exports = {

@@ -7,7 +7,7 @@ async function insertWifiologyUser(client, newWifiologyUser) {
         "RETURNING userID",
         newWifiologyUser.toRow()
     );
-    if(result.rows){
+    if(result.rows.length > 0){
         return result.rows[0].userid;
     } else {
         return null;
@@ -19,7 +19,19 @@ async function selectWifiologyUserByID(client, userID){
         "SELECT * FROM wifiologyUser WHERE userID = $1",
         [userID]
     );
-    if(result.rows){
+    if(result.rows.length > 0){
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
+async function selectWifiologyUserByUserName(client, userName){
+    let result = await client.query(
+        "SELECT * FROM wifiologyUser WHERE userName = $1",
+        [userName]
+    );
+    if(result.rows.length > 0){
         return fromRow(result.rows[0]);
     } else {
         return null;
@@ -42,5 +54,6 @@ async function selectAllWifiologyUsers(client, limit, offset) {
 module.exports = {
     insertWifiologyUser,
     selectWifiologyUserByID,
+    selectWifiologyUserByUserName,
     selectAllWifiologyUsers
 };
