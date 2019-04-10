@@ -4,6 +4,8 @@ const pg = require('pg');
 const openAPIinitialize = require('express-openapi').initialize;
 const swaggerUi = require('swagger-ui-express');
 const bodyParser = require('body-parser');
+const winston = require('winston');
+const expressWinston = require('express-winston');
 
 
 const { createPostgresPool } = require('./db/core');
@@ -51,6 +53,21 @@ function createApplication(pg_conn_str){
     application.use(bodyParser.urlencoded({ extended: true }));
     application.use(bodyParser.json());
 
+    application.use(expressWinston.logger({
+        transports: [
+            new winston.transports.Console()
+        ],
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        ),
+        meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+        msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+        expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+        colorize: true, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+        ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
+    }));
+
     openAPIinitialize({
         app: application,
         apiDoc: apiDoc,
@@ -77,5 +94,11 @@ function createApplication(pg_conn_str){
 
     return application;
 }
+
+
+winston.add(new winston.transports.Console({
+    format: winston.format.simple()
+}));
+
 
 application = createApplication(DATABASE_URL).listen(PORT, () => console.log(`Listening on ${ PORT }`));
