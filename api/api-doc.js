@@ -24,6 +24,23 @@ let apiDoc = {
             },
             required: ['userID', 'userName']
         },
+        WifiologyApiKeyInfo: {
+            type: 'object',
+            properties: {
+                apiKeyID: {
+                    type: 'integer'
+                },
+                ownerID: {
+                    type: 'integer'
+                },
+                apiKeyDescription: {
+                    type: 'string'
+                },
+                apiKeyExpiry: {
+                    type: 'string'
+                }
+            }
+        },
         WifiologyNode: {
             type: 'object',
             properties: {

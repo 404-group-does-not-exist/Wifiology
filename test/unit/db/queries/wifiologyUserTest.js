@@ -1,29 +1,20 @@
-const pg = require('pg');
-const named = require('node-postgres-named');
+const { spawnClient } = require("../../tools");
 
 const mocha = require('mocha');
 const chai = require('chai');
 const expect = chai.expect;
 const assert = require('assert');
 
-const wifiologyUserModel = require("../../../models/wifiologyUser");
-const wifiologyCoreQueries = require("../../../queries/core");
-const wifiologyUserQueries = require("../../../queries/wifiologyUser");
+const wifiologyUserModel = require("../../../../db/models/wifiologyUser");
+const wifiologyCoreQueries = require("../../../../db/queries/core");
+const wifiologyUserQueries = require("../../../../db/queries/wifiologyUser");
 
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
 
-async function spawnClient(){
-    let dbClient = new pg.Client({
-        connectionString: DATABASE_URL
-    });
-    named.patch(dbClient);
-    await dbClient.connect();
-    return dbClient
-}
 
-mocha.describe('WifiologyUserQueries', function(){
+describe('WifiologyUserQueries', function(){
     beforeEach(async function(){
-        let dbClient = await spawnClient();
+        let dbClient = await spawnClient(DATABASE_URL);
         try{
             await dbClient.query("DROP SCHEMA public cascade;");
             await dbClient.query("CREATE SCHEMA public;");
@@ -36,7 +27,7 @@ mocha.describe('WifiologyUserQueries', function(){
     
     it('should allow the developer to insert users correctly', async function(){
 
-        let dbClient = await spawnClient();
+        let dbClient = await spawnClient(DATABASE_URL);
 
         try{
             let newUser = await wifiologyUserModel.createNewWifiologyUserWithPassword(
@@ -54,7 +45,7 @@ mocha.describe('WifiologyUserQueries', function(){
 
     it('should allow the developer to select a user by the user ID', async function(){
 
-        let dbClient = await spawnClient();
+        let dbClient = await spawnClient(DATABASE_URL);
 
         try{
             let newUser = await wifiologyUserModel.createNewWifiologyUserWithPassword(
@@ -78,7 +69,7 @@ mocha.describe('WifiologyUserQueries', function(){
     });
 
     it('should allow the developer to select a user by their userName', async function() {
-        let dbClient = await spawnClient();
+        let dbClient = await spawnClient(DATABASE_URL);
 
         try {
             let newUser = await wifiologyUserModel.createNewWifiologyUserWithPassword(
@@ -102,7 +93,7 @@ mocha.describe('WifiologyUserQueries', function(){
     });
 
     it('should allow the developer to select all users', async function(){
-        let dbClient = await spawnClient();
+        let dbClient = await spawnClient(DATABASE_URL);
 
         try{
             let newUser = await wifiologyUserModel.createNewWifiologyUserWithPassword(
