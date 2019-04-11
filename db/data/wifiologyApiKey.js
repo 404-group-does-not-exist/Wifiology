@@ -17,7 +17,7 @@ async function getApiKeysByOwnerID(client, ownerID) {
 
 async function createNewApiKey(client, ownerID, description){
     // TODO: Check if duplicate email or username
-    let newApiKey = await randomHexStringAsync(128);
+    let newApiKey = await randomHexStringAsync(64);
     let newApiKeyObject = await createNewApiKeyRecord(ownerID, newApiKey, description);
     newApiKeyObject.apiKeyID = await wifiologyApiKeyQueries.insertWifiologyApiKey(client, newApiKeyObject);
     return {
