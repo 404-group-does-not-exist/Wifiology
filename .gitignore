@@ -2,7 +2,7 @@
 node_modules/
 
 # Ignore TESTs for now - not in use
-test.js
+# testEndToEnd.js
 
 npm-debug.log
 

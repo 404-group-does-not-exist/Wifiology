@@ -20,11 +20,14 @@ CREATE TABLE IF NOT EXISTS wifiologyNode(
   nodeID SERIAL NOT NULL PRIMARY KEY,
   nodeName VARCHAR(256) UNIQUE NOT NULL,
   nodeLastSeenTime TIMESTAMP WITH TIME ZONE NULL,
-  nodeLocation TEXT NOT NULL,
-  nodeDescription TEXT NOT NULL,
+  nodeLocation VARCHAR(500) NOT NULL,
+  nodeDescription VARCHAR(8000) NOT NULL,
   ownerID INTEGER REFERENCES wifiologyUser(userID),
+  isPublic BOOLEAN DEFAULT FALSE,
   nodeData JSONB NOT NULL DEFAULT '{}'
 );
+
+CREATE INDEX IF NOT EXISTS wifiologyNodeOwnerID_IDX ON wifiologyNode(ownerID);
 
 CREATE TABLE IF NOT EXISTS measurement(
     measurementID BIGSERIAL NOT NULL PRIMARY KEY,

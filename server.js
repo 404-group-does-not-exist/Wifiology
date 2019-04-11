@@ -21,7 +21,6 @@ const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
 
 
-
 function createApplication(pg_conn_str){
     let application = express();
     let pool = createPostgresPool(pg_conn_str, true);
