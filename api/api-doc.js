@@ -65,6 +65,9 @@ let apiDoc = {
                 nodeData: {
                     type: 'object'
                 },
+                isPublic:{
+                    type: 'boolean'
+                },
                 owner: {
                     $ref: '#/definitions/WifiologyUser'
                 }
