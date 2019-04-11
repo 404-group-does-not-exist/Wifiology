@@ -2,10 +2,10 @@ const mocha = require('mocha');
 const chai = require('chai');
 const expect = chai.expect;
 const assert = require('assert');
-const wifiologyUser = require("../../../models/wifiologyUser");
+const wifiologyUser = require("../../../../db/models/wifiologyUser");
 
 
-mocha.describe('WifiologyUser', function(){
+describe('WifiologyUser', function(){
     it('should have the userID, emailAddress, userName, userData, passwordData parameters', function() {
        let user = new wifiologyUser.WifiologyUser(1, "foo@aol.com", "bob", {foo: "bar"}, null);
        expect(user.userID).to.eql(1);

@@ -10,7 +10,10 @@ function testThing(testThingService){
     // NOTE: We could also use a YAML string here.
     GET.apiDoc = {
         summary: 'Returns worlds by name.',
-        operationId: 'getWorlds',
+        operationId: 'getTestThing',
+        tags: [
+            "Test Stuff"
+        ],
         parameters: [],
         responses: {
             200: {
