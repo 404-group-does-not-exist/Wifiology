@@ -7,6 +7,10 @@ const bodyParser = require('body-parser');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const authHandlerConstructor = require('./routes/authHandler');
+
 
 const { createPostgresPool } = require('./db/core');
 
@@ -31,7 +35,7 @@ function createApplication(pg_conn_str){
         .set('views', path.join(__dirname, 'views'))
         .set('view engine', 'ejs')
         .get('/', (req, res) => res.render('pages/index'))
-        .get('/db', async (req, res) => {
+        .get('/db', async  (req, res) => {
             try {
                 const client = await pool.connect();
                 const result = await client.query('SELECT * FROM test_table');
@@ -67,6 +71,10 @@ function createApplication(pg_conn_str){
         colorize: true, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
         ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
     }));
+
+    passport.use(new LocalStrategy(
+        authHandlerConstructor(pool)
+    ));
 
     openAPIinitialize({
         app: application,
