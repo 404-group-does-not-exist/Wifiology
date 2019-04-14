@@ -4,7 +4,7 @@ const pg = require('pg');
 const openAPIinitialize = require('express-openapi').initialize;
 const swaggerUi = require('swagger-ui-express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parse');
+const cookieParser = require('cookie-parser');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 
@@ -12,6 +12,7 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const authHandlerConstructor = require('./routes/authHandler');
+const routeInstaller = require('./routes/wifiologyRoutes');
 
 
 const { createPostgresPool } = require('./db/core');
@@ -79,16 +80,11 @@ function createApplication(pg_conn_str){
         authHandlerConstructor(pool)
     ));
 
-    application.use(session({secret: process.ENV.SECRET || 'qov8yHA3grUJ1PjWdntx'}));
+    application.use(session({secret: process.env.SECRET || 'qov8yHA3grUJ1PjWdntx'}));
     application.use(passport.initialize());
     application.use(passport.session());
 
-    application.post("/login",
-        passport.authenticate('local', { failureRedirect: '/login' }),
-        function(req, res) {
-            res.redirect('/');
-        }
-    );
+    routeInstaller(application, passport, pool);
 
     openAPIinitialize({
         app: application,
