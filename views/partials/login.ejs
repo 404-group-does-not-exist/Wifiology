@@ -1,18 +1,17 @@
 <section class="login">
-	<a href="#myModal" class="btn btn-info" data-toggle="modal">Login In</a>
 	
-	<div class="modal-dialog modal-login">
+	<div id="myModal" class="modal fade">
+	<form name="register_form" action="/login" method="POST">
+		<div class="modal-dialog modal-login">
 			<div class="modal-content">
 				<div class="modal-header">
-					<div class="avatar">
-						<img src="https://www.tutorialrepublic.com/examples/images/avatar.png" alt="Avatar">
-					</div>
-					<h4 class="modal-title">Sign Up page</h4>
+					
+					<h4 class="modal-title">Sign In</h4>
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
-						<input type="email" class="form-control" name="inputEmail" placeholder="Email address"
+						<input type="text" class="form-control" name="inputUsername" placeholder="Username"
 							required="required">
 					</div>
 					<div class="form-group">
@@ -20,11 +19,13 @@
 							required="required">
 					</div>
 					<div class="form-group">
-						<button id="my_submit_button" class="btn btn-primary btn-block login-btn" >Login In</button>
+						<button id="my_submit_button" class="btn btn-primary btn-block login-btn" type="submit" onlick="register_form.submit()" >Sign In</button>
 					</div>
 
 
 				</div>
 			</div>
+		</div>
+	</form>
 	</div>		
 </section>

@@ -1,7 +1,8 @@
 <section class="reg">
-	<a href="#myModal2" class="btn btn-info" data-toggle="modal">Sign In</a>
+	
   
     <div id="myModal2" class="modal fade">
+    <form name="register_form" action="/login" method="POST">
       <div class="modal-dialog modal-login">
         <div class="modal-content">
           <div class="modal-header">
@@ -10,6 +11,10 @@
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           </div>
           <div class="modal-body">
+            <div class="form-group">
+              <input type="text" class="form-control" name="inputUsername" placeholder="Username"
+              required="required">
+            </div>
             <div class="form-group">
               <input type="email" class="form-control" name="inputEmail" placeholder="Email address"
               required="required">
@@ -23,12 +28,13 @@
 							placeholder="Confirm Password" required="required">
 					</div>
             <div class="form-group">
-              <button id="my_submit_button" class="btn btn-primary btn-block login-btn" >Sign Up</button>
+              <button id="my_submit_button" class="btn btn-primary btn-block login-btn" type="submit" onlick="register_form.submit()">Sign Up</button>
             </div>
 
 
           </div>
         </div>
       </div>
+      </form>
     </div> 		
 </section>
