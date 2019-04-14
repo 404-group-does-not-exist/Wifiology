@@ -31,7 +31,9 @@
     "db-migrate-pg": "^0.5.0",
     "sync": "^0.2.5",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "express-session": "^1.16.1",
+    "cookie-parser": "^1.4.4"
   },
   "devDependencies": {
     "chai": "^4.2.0",

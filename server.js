@@ -3,9 +3,11 @@ const path = require('path');
 const openAPIinitialize = require('express-openapi').initialize;
 const swaggerUi = require('swagger-ui-express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parse');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 
+const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const authHandlerConstructor = require('./routes/authHandler');
@@ -41,6 +43,25 @@ function createApplication(pg_conn_str, automigrate){
 
     let pool = createPostgresPool(pg_conn_str, true);
 
+    application.use(bodyParser.urlencoded({ extended: true }));
+    application.use(bodyParser.json());
+    application.use(cookieParser());
+
+    application.use(expressWinston.logger({
+        transports: [
+            new winston.transports.Console()
+        ],
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        ),
+        meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+        msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+        expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+        colorize: true, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+        ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
+    }));
+
     application
         .use(express.static(path.join(__dirname, 'public')))
         .set('views', path.join(__dirname, 'views'))
@@ -65,27 +86,20 @@ function createApplication(pg_conn_str, automigrate){
         swaggerUi.setup(null, {swaggerUrl: '/api/1.0/api-docs'})
     );
 
-    application.use(bodyParser.urlencoded({ extended: true }));
-    application.use(bodyParser.json());
-
-    application.use(expressWinston.logger({
-        transports: [
-            new winston.transports.Console()
-        ],
-        format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple()
-        ),
-        meta: true, // optional: control whether you want to log the meta data about the request (default to true)
-        msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
-        expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
-        colorize: true, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
-        ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
-    }));
-
     passport.use(new LocalStrategy(
         authHandlerConstructor(pool)
     ));
+
+    application.use(session({secret: process.ENV.SECRET || 'qov8yHA3grUJ1PjWdntx'}));
+    application.use(passport.initialize());
+    application.use(passport.session());
+
+    application.post("/login",
+        passport.authenticate('local', { failureRedirect: '/login' }),
+        function(req, res) {
+            res.redirect('/');
+        }
+    );
 
     openAPIinitialize({
         app: application,
