@@ -1,7 +1,89 @@
 <section id="section-banner">
+<a href="#myModal" class="btn btn-info" data-toggle="modal" style="margin-right:20px; margin-top:20px; background-color:transparent; ">Login In</a>
+                <a href="#myModal2" class="btn btn-info" data-toggle="modal" style="margin-right:20px; margin-top:20px; background-color:transparent;">Sign In</a>
+
+<!--                  login form                          -->
+    <div id="myModal" class="modal fade">
+    <form name="register_form" action="/login" method="POST">
+        <div class="modal-dialog modal-login">
+            <div class="modal-content">
+                <div class="modal-header">
+                    
+                    <h4 class="modal-title">Sign In</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="inputUsername" placeholder="Username"
+                            required="required" >
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" name="password" placeholder="Password"
+                            required="required">
+                    </div>
+                    <div class="form-group">
+                        <button id="my_submit_button" class="btn btn-primary btn-block login-btn" type="submit" onlick="register_form.submit()" >Sign In</button>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </form>
+    </div>  
+
+
+    <!--                           register form                 -->
+    <div id="myModal2" class="modal fade">
+    <form name="register_form" action="/register" method="POST">
+      <div class="modal-dialog modal-login">
+        <div class="modal-content">
+          <div class="modal-header">
+            
+            <h4 class="modal-title">Register Page</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <input type="text" class="form-control" name="inputUsername" placeholder="Username"
+              required="required">
+            </div>
+            <div class="form-group">
+              <input type="email" class="form-control" name="inputEmail" placeholder="Email address"
+              required="required">
+            </div>
+            <div class="form-group">
+                        <input id="psw" type="password" class="form-control" name="password" placeholder="Password"
+                            required="required">
+                    </div>
+                    <div class="form-group">
+                        <input id="cpsw" type="password" class="form-control" name="confirm password"
+                            placeholder="Confirm Password" required="required">
+                    </div>
+            <div class="form-group">
+              <button id="my_submit_button" class="btn btn-primary btn-block login-btn" type="submit" onlick="register_form.submit()">Sign Up</button>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+      </form>
+    </div>      
+
+
+
+
+
+
+
+
+
     	<div class="container">
+        
     		<div class="row">
     			<div class="banner-content wow fadeInRight">
+                
     				<h2 class="title">
 	    					Wifiology<br/>
 							<span>
