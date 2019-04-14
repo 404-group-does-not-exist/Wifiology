@@ -1,3 +1,5 @@
+package-lock.json
+
 # no need to commit node modules
 node_modules/
 
@@ -9,4 +11,5 @@ npm-debug.log
 .DS_store
 
 testconfig.env
+
 
