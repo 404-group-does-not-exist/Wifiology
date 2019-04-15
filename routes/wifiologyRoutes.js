@@ -16,7 +16,7 @@ function routesConstructor(app, passport, dbPool){
     }
 
     async function registrationPostHandler(req, res){
-
+        
     }
 
     app.get('/', indexGetHandler);
