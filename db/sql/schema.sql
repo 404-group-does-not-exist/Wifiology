@@ -93,3 +93,8 @@ CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
     dataFrameCount INTEGER NOT NULL DEFAULT 0,
     dataThroughput INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS kvStore(
+    keyName TEXT NOT NULL PRIMARY KEY,
+    value JSONB NOT NULL DEFAULT NULL
+);
