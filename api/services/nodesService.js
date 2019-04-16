@@ -1,6 +1,6 @@
 const wifiologyNodeData = require('../../db/data/wifiologyNode');
 
-const { spawnClientFromPool, commit, rollback } = require("../../db/core");
+const { spawnClientFromPool, commit, rollback, release } = require("../../db/core");
 
 function nodesServiceConstructor(dbPool){
     return  {
@@ -17,7 +17,7 @@ function nodesServiceConstructor(dbPool){
                 throw e;
             }
             finally {
-                await client.end();
+                await release(client);
             }
 
         },
@@ -43,7 +43,7 @@ function nodesServiceConstructor(dbPool){
                 throw e;
             }
             finally {
-                await client.end();
+                await release(client);
             }
         },
         async getNodesForOwnerAPI(ownerID){
@@ -59,7 +59,7 @@ function nodesServiceConstructor(dbPool){
                 throw e;
             }
             finally {
-                await client.end();
+                await release(client);
             }
         }
     };

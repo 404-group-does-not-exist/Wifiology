@@ -72,8 +72,9 @@ function fromRow(row) {
         row.managementframecount, row.associationframecount, row.reassociationframecount,
         row.disassociationframecount, row.controlframecount, row.rtsframecount,
         row.ctsframecount, row.ackframecount, row.dataframecount, row.datathroughputin,
-        row.datathroughputout, row.retryframecount, row.averagepower, row.stddevpower,
-        row.lowestrate, row.highestrate, row.failedfcscount
+        row.datathroughputout, row.retryframecount, row.averagepower || 0,
+        row.stddevpower || 0, row.lowestrate || 0,
+        row.highestrate || 0, row.failedfcscount || 0
     );
 }
 
@@ -85,9 +86,9 @@ function fromAPI(apiData) {
         apiData.ctsFrameCount, apiData.ackFrameCount,
         apiData.dataFrameCount, apiData.dataThroughputIn,
         apiData.dataThroughputOut, apiData.retryFrameCount,
-        apiData.averagePower, apiData.stdDevPower,
-        apiData.lowestRate, apiData.highestRate,
-        apiData.failedFCSCount
+        apiData.averagePower || 0, apiData.stdDevPower || 0,
+        apiData.lowestRate || 0, apiData.highestRate || 0,
+        apiData.failedFCSCount || 0
     )
 }
 

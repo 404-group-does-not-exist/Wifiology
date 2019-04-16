@@ -5,8 +5,8 @@ async function insertWifiologyStation(client, newWifiologyStation) {
         `INSERT INTO station(
             macaddress, extraData
         ) VALUES (
-           $macAdress, $extraData
-        ) ON CONFLICT (macaddress) DO NOTHING RETURNING stationid`,
+           $macAddress, $extraData
+        ) RETURNING stationid`,
         newWifiologyStation.toRow()
     );
     if(result.rows.length > 0){
@@ -16,7 +16,20 @@ async function insertWifiologyStation(client, newWifiologyStation) {
     }
 }
 
+async function selectWifiologyStationByMacAddress(client, macAddress) {
+    let result = await client.query(
+        `SELECT * FROM station WHERE macAddress = $1`,
+        [macAddress]
+    );
+    if(result.rows.length > 0) {
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 
 module.exports = {
-    insertWifiologyStation
+    insertWifiologyStation,
+    selectWifiologyStationByMacAddress
 };

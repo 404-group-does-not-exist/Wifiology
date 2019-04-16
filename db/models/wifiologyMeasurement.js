@@ -46,7 +46,7 @@ function fromRow(row) {
     return new WifiologyMeasurement(
         row.measurementid, row.measurementnodeid, row.measurementstarttime,
         row.measurementendtime, row.measurementduration, row.channel,
-        row.averagenoise, row.stddevnoise, row.extradata
+        row.averagenoise || null, row.stddevnoise || null, row.extradata
     );
 }
 
@@ -58,7 +58,8 @@ function fromAPI(apiData, nodeID){
     return new WifiologyMeasurement(
         null, nodeID, dateFromEpochSeconds(apiData.measurementStartTime),
         dateFromEpochSeconds(apiData.measurementEndTime), apiData.measurementDuration,
-        apiData.channel, apiData.averageNoise, apiData.stdDevNoise, apiData.extraData
+        apiData.channel, apiData.averageNoise || null, apiData.stdDevNoise || null,
+        apiData.extraData
     )
 }
 

@@ -1,6 +1,6 @@
 const wifiologyApiKeyData = require('../../db/data/wifiologyApiKey');
 const wifiologyUserData = require('../../db/data/wifiologyUser');
-const { spawnClientFromPool, commit } = require("../../db/core");
+const { spawnClientFromPool, commit, release } = require("../../db/core");
 
 function usersServiceConstructor(dbPool){
     return  {
@@ -13,7 +13,7 @@ function usersServiceConstructor(dbPool){
                 return result;
             }
             finally {
-                await client.end();
+                await release(client);
             }
 
         },
@@ -40,7 +40,7 @@ function usersServiceConstructor(dbPool){
                 return result;
             }
             finally {
-                await client.end();
+                await release(client);
             }
 
         },
@@ -68,7 +68,7 @@ function usersServiceConstructor(dbPool){
                 return result;
             }
             finally {
-                await client.end();
+                await release(client);
             }
         },
         async deleteApiKeyByIDAPI(ownerID, apiKeyID){
@@ -94,7 +94,7 @@ function usersServiceConstructor(dbPool){
                 return {};
             }
             finally {
-                await client.end();
+                await release(client);
             }
 
         }

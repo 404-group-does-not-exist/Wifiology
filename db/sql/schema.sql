@@ -71,14 +71,7 @@ CREATE TABLE IF NOT EXISTS associationStationServiceSetMap(
 
 CREATE TABLE IF NOT EXISTS measurementStationMap(
     mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID),
-    mapStationID BIGINT NOT NULL REFERENCES station(stationID), -- can we use the same name as line 30?
-    PRIMARY KEY(mapMeasurementID, mapStationID)
-);
-
--- write select for this one and test it
-CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
-    mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID), -- can we use the same name as line 36?
-    mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
+    mapStationID BIGINT NOT NULL REFERENCES station(stationID),
     managementFrameCount INTEGER NOT NULL DEFAULT 0,
     associationFrameCount INTEGER NOT NULL DEFAULT 0,
     reassociationFrameCount INTEGER NOT NULL DEFAULT 0,
@@ -96,5 +89,12 @@ CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
     lowestRate INTEGER,
     highestRate INTEGER,
     failedFCSCount INTEGER,
+    PRIMARY KEY(mapMeasurementID, mapStationID)
+);
+
+-- write select for this one and test it
+CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
+    mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID), -- can we use the same name as line 36?
+    mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
     PRIMARY KEY(mapMeasurementID, mapServiceSetID)
 );

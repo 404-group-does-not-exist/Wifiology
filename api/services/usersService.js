@@ -1,5 +1,5 @@
 const wifiologyUserData = require('../../db/data/wifiologyUser');
-const { spawnClientFromPool, commit } = require("../../db/core");
+const { spawnClientFromPool, commit, release } = require("../../db/core");
 
 function usersServiceConstructor(dbPool){
     return  {
@@ -12,7 +12,7 @@ function usersServiceConstructor(dbPool){
                 return result;
             }
             finally {
-                await client.end();
+                await release(client);
             }
 
         },
@@ -36,7 +36,7 @@ function usersServiceConstructor(dbPool){
 
             }
             finally {
-                await client.end();
+                await release(client);
             }
         },
         async createUserAPI(newUserData){
@@ -55,7 +55,7 @@ function usersServiceConstructor(dbPool){
                 return result;
             }
             finally {
-                await client.end();
+                await release(client);
             }
         }
     };

@@ -31,7 +31,14 @@ function fromRow(row) {
     );
 }
 
+function fromAPI(apiData){
+    return new WifiologyServiceSet(
+        null, apiData.bssid, apiData.networkName, apiData.extraData
+    )
+}
+
 module.exports = {
     WifiologyServiceSet,
-    fromRow
+    fromRow,
+    fromAPI
 };

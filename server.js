@@ -16,6 +16,7 @@ const testThingService = require('./api/services/testThingService').testThingSer
 const usersServiceConstructor = require('./api/services/usersService');
 const apiKeysServiceConstructor = require('./api/services/apiKeysService');
 const nodesServiceConstructor = require('./api/services/nodesService');
+const measurementsServiceConstructor = require('./api/services/measurementsService');
 const securityAuthHandlerConstructor = require('./api/securityHandler');
 
 const PORT = process.env.PORT || 5000;
@@ -75,7 +76,8 @@ function createApplication(pg_conn_str){
             testThingService,
             usersService: usersServiceConstructor(pool),
             apiKeysService: apiKeysServiceConstructor(pool),
-            nodesService: nodesServiceConstructor(pool)
+            nodesService: nodesServiceConstructor(pool),
+            measurementsService: measurementsServiceConstructor(pool)
         },
         securityHandlers: securityAuthHandlerConstructor(pool),
         paths: './api/paths',

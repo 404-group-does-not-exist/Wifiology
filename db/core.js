@@ -27,9 +27,14 @@ async function rollback(client){
     return await client.query("ROLLBACK");
 }
 
+async function release(client){
+    return Promise.resolve(client.release());
+}
+
 module.exports = {
     createPostgresPool,
     spawnClientFromPool,
     commit,
-    rollback
+    rollback,
+    release
 };

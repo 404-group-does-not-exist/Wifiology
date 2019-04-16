@@ -3,7 +3,7 @@ const wifiologyNodeData = require('../../db/data/wifiologyNode');
 const wifiologyMeasurementData = require('../../db/data/wifiologyMeasurement');
 
 
-const { spawnClientFromPool, commit, rollback } = require("../../db/core");
+const { spawnClientFromPool, commit, rollback, release } = require("../../db/core");
 
 function nodesServiceConstructor(dbPool){
     return  {
@@ -27,16 +27,22 @@ function nodesServiceConstructor(dbPool){
                         status: 403
                     }
                 }
-                wifiologyMeasurementData.createNewMeasurement();
+                let result = await wifiologyMeasurementData.loadNewMeasurementData(client, newMeasurementData, nodeID);
+                let finalResult = {
+                    measurement: result.newMeasurement.toApiResponse(),
+                    stations: result.stations.map(s => s.toApiResponse()),
+                    serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
+                };
+
                 await commit(client);
-                return result;
+                return finalResult;
             }
             catch(e){
                 await rollback(client);
                 throw e;
             }
             finally {
-                await client.end();
+                await release(client);
             }
         }
     };

@@ -28,7 +28,14 @@ function fromRow(row) {
     );
 }
 
+function fromAPI(apiData){
+    return new WifiologyStation(
+       null, apiData.macAddress, apiData.extraData
+    );
+}
+
 module.exports = {
     WifiologyStation,
-    fromRow
+    fromRow,
+    fromAPI
 };

@@ -11,7 +11,7 @@ function nodes(nodesService) {
     }
 
     async function POST(req, res, next) {
-        let newNodeData = req.body.newNodeData;
+        let newNodeData = req.body;
         let ownerID = req.user.userID;
         let newNode = await nodesService.createNodeAPI(newNodeData, ownerID);
         res.status(200).json(newNode);
@@ -104,6 +104,14 @@ function nodes(nodesService) {
                     required: ["nodeName", "nodeLocation", "nodeDescription", "isPublic", "nodeData"]
                 },
                 required: true
+            }
+        ],
+        security: [
+            {
+                'BasicAuth': []
+            },
+            {
+                'ApiKeyAuth': []
             }
         ],
         responses: {

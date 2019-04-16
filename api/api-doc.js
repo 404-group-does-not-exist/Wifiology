@@ -146,7 +146,7 @@ let apiDoc = {
                     type: 'object'
                 }
             },
-            required: ['macAddress', 'dataCounters']
+            required: ['bssid', 'infrastructureMacAddresses', 'associatedMacAddresses']
         },
         NewWifiologyMeasurement: {
             type: 'object',

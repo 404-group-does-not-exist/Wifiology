@@ -1,7 +1,7 @@
 const basicAuth = require('basic-auth');
 const { getUserByUserName } = require('../db/data/wifiologyUser');
 const { getUserByApiKey } = require('../db/data/wifiologyApiKey');
-const { spawnClientFromPool} = require('../db/core');
+const { spawnClientFromPool, release } = require('../db/core');
 
 
 function securityAuthHandlerConstructor(dbPool){
@@ -13,15 +13,18 @@ function securityAuthHandlerConstructor(dbPool){
         }
 
         let client = await spawnClientFromPool(dbPool);
-        let retrievedUser = await getUserByUserName(client, user.name);
-        await client.end();
-
-        if(retrievedUser && await retrievedUser.verifyPassword(user.pass)){
-            req.user = retrievedUser;
-            return Promise.resolve(true);
+        try{
+            let retrievedUser = await getUserByUserName(client, user.name);
+            if(retrievedUser && await retrievedUser.verifyPassword(user.pass)){
+                req.user = retrievedUser;
+                return Promise.resolve(true);
+            }
+            else {
+                return Promise.resolve(false);
+            }
         }
-        else {
-            return Promise.resolve(false);
+        finally {
+            await release(client);
         }
     }
 
@@ -31,15 +34,18 @@ function securityAuthHandlerConstructor(dbPool){
             return Promise.resolve(false);
         }
         let client = await spawnClientFromPool(dbPool);
-        let retrievedUser = await getUserByApiKey(client, apiKey);
-        await client.end();
+        try {
+            let retrievedUser = await getUserByApiKey(client, apiKey);
 
-        if(retrievedUser){
-            req.user = retrievedUser;
-            return Promise.resolve(true);
+            if (retrievedUser) {
+                req.user = retrievedUser;
+                return Promise.resolve(true);
+            } else {
+                return Promise.resolve(false);
+            }
         }
-        else {
-            return Promise.resolve(false);
+        finally {
+            await release(client);
         }
     }
 
