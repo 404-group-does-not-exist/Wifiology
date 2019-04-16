@@ -83,22 +83,7 @@ function kvStore(kvService){
                             type: 'string'
                         },
                         value: {
-                            anyOf: [
-                                {type: 'string'},
-                                {type: 'number'},
-                                {type: 'array', items: {}},
-                                {type: 'integer'},
-                                {type: 'boolean'},
-                                {type: 'object'}
-                            ]   
-                              //- type: string
-                              //- type: number
-                              //- type: integer
-                              //- type: boolean
-                              //- type: array
-                              //  items: {}
-                              //- type: object
-                            //type: 'object'
+                           
                         }
                     },
                     required: ["keyName", "value"]
