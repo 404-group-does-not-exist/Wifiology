@@ -77,6 +77,122 @@ let apiDoc = {
                 'ownerID', 'nodeData'
             ]
         },
+        WifiologyDataCounters: {
+            type: 'object',
+            properties: {
+                
+                managementFrameCount: { type: 'integer' },
+                associationFrameCount: { type: 'integer' },
+                reassociationFrameCount: { type: 'integer' },
+                disassociationFrameCount: { type: 'integer' },
+                controlFrameCount: { type: 'integer' },
+                rtsFrameCount: { type: 'integer' },
+                ctsFrameCount: { type: 'integer' },
+                ackFrameCount: { type: 'integer' },
+                dataFrameCount: { type: 'integer' },
+                dataThroughputIn: { type: 'integer' },
+                dataThroughputOut: { type: 'integer' },
+                retryFrameCount: { type: 'integer' },
+                averagePower: {type: 'number'},
+                stdDevPower: {type: 'number'},
+                lowestRate: { type: 'integer' },
+                highestRate: { type: 'integer' },
+                failedFCSCount: { type: 'integer' }
+            },
+            required: [
+                'managementFrameCount', 'associationFrameCount', 'reassociationFrameCount',
+                'disassociationFrameCount', 'controlFrameCount', 'rtsFrameCount', 'ctsFrameCount',
+                'ackFrameCount', 'dataFrameCount', 'dataThroughputIn', 'dataThroughputOut',
+                'retryFrameCount'
+            ]
+        },
+        NewWifiologyMeasurementStation: {
+            type: 'object',
+            properties: {
+                macAddress: {
+                    type: 'string'
+                },
+                dataCounters: {
+                    $ref: '#/definitions/WifiologyDataCounters'
+                },
+                extraData: {
+                    type: 'object'
+                }
+            },
+            required: ['macAddress', 'dataCounters']
+        },
+        NewWifiologyMeasurementServiceSet: {
+            type: 'object',
+            properties: {
+                bssid: {
+                    type: 'string'
+                },
+                networkName: {
+                    type: 'string'
+                },
+                infrastructureMacAddresses: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                },
+                associatedMacAddresses: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                },
+                extraData: {
+                    type: 'object'
+                }
+            },
+            required: ['macAddress', 'dataCounters']
+        },
+        NewWifiologyMeasurement: {
+            type: 'object',
+            properties: {
+                measurementStartTime: {
+                    type: 'number'
+                },
+                measurementEndTime: {
+                    type: 'number'
+                },
+                measurementDuration: {
+                    type: 'number'
+                },
+                channel: {
+                    type: 'integer'
+                },
+                averageNoise: {
+                    type: 'number'
+                },
+                stdDevNoise: {
+                    type: 'number'
+                },
+                stations: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/definitions/NewWifiologyMeasurementStation'
+                    }
+                },
+                bssidToNetworkNameMap: {
+                    type: 'object'
+                },
+                serviceSets: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/definitions/NewWifiologyMeasurementServiceSet'
+                    }
+                },
+                extraData: {
+                    type: 'object'
+                }
+            },
+            required: [
+                'measurementStartTime', 'measurementEndTime', 'measurementDuration',
+                'channel', 'stations', 'serviceSets'
+            ]
+        },
         TestThing: {
             type: 'object',
             description: 'A thing to play with OpenAPI and do a demo.'

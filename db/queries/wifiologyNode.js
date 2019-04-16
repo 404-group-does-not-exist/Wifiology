@@ -2,9 +2,9 @@ const { fromRow } = require('../models/wifiologyNode');
 
 async function insertWifiologyNode(client, newWifiologyNode) {
     let result = await client.query(
-        "INSERT INTO wifiologyUser(nodeName, nodeLocation, nodeDescription, ownerID, isPublic, nodeData) " +
+        "INSERT INTO wifiologyNode(nodeName, nodeLocation, nodeDescription, ownerID, isPublic, nodeData) " +
         "VALUES ($nodeName, $nodeLocation, $nodeDescription, $ownerID, $isPublic, $nodeData) " +
-        "RETURNING userID",
+        "RETURNING nodeID",
         newWifiologyNode.toRow()
     );
     if(result.rows.length > 0){

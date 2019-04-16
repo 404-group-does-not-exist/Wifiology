@@ -1,10 +1,12 @@
-function nodes() {
+function nodes(nodesService) {
     let operations = {
         GET
     };
 
     async function GET(req, res, next) {
-        res.status(200).json({});
+        let ownerID = req.user.userID;
+        let nodes = await nodesService.getNodesForOwnerAPI(ownerID);
+        res.status(200).json(nodes);
     }
 
 

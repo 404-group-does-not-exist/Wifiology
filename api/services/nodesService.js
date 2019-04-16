@@ -1,0 +1,69 @@
+const wifiologyNodeData = require('../../db/data/wifiologyNode');
+
+const { spawnClientFromPool, commit, rollback } = require("../../db/core");
+
+function nodesServiceConstructor(dbPool){
+    return  {
+        async getAllNodesAPI(limit, offset){
+            let client = await spawnClientFromPool(dbPool);
+            try {
+                let nodes = await wifiologyNodeData.getAllWifiologyNodes(client, limit, offset);
+                let result = nodes.map(n => n.toApiResponse());
+                await commit(client);
+                return result;
+            }
+            catch(e){
+                await rollback(client);
+                throw e;
+            }
+            finally {
+                await client.end();
+            }
+
+        },
+        async createNodeAPI(newNodeData, ownerID){
+            let client =  await spawnClientFromPool(dbPool);
+
+            try {
+                let newNode = await wifiologyNodeData.createNewWifiologyNode(
+                    client,
+                    newNodeData.nodeName,
+                    newNodeData.nodeLocation,
+                    newNodeData.nodeDescription,
+                    ownerID,
+                    newNodeData.isPublic,
+                    newNodeData.nodeData
+                );
+                let result = newNode.toApiResponse();
+                await commit(client);
+                return result;
+            }
+            catch(e){
+                await rollback(client);
+                throw e;
+            }
+            finally {
+                await client.end();
+            }
+        },
+        async getNodesForOwnerAPI(ownerID){
+            let client = await spawnClientFromPool(dbPool);
+            try {
+                let nodes = await wifiologyNodeData.getWifiologyNodesByOwnerID(client, ownerID);
+                let result = nodes.map(n => n.toApiResponse());
+                await commit(client);
+                return result;
+            }
+            catch(e){
+                await rollback(client);
+                throw e;
+            }
+            finally {
+                await client.end();
+            }
+        }
+    };
+}
+
+module.exports = nodesServiceConstructor;
+

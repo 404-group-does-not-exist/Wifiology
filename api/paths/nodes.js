@@ -1,14 +1,20 @@
-function nodes() {
+function nodes(nodesService) {
     let operations = {
         GET, POST
     };
 
     async function GET(req, res, next) {
-        res.status(200).json({});
+        let limit = req.query.limit || 500;
+        let offset = req.query.offset || 0;
+        let allNodes = await nodesService.getAllWifiologyNodes(limit, offset, req.user);
+        res.status(200).json(allNodes);
     }
 
     async function POST(req, res, next) {
-        res.status(200).json({});
+        let newNodeData = req.body.newNodeData;
+        let ownerID = req.user.userID;
+        let newNode = await nodesService.createNodeAPI(newNodeData, ownerID);
+        res.status(200).json(newNode);
     }
 
 
@@ -19,7 +25,24 @@ function nodes() {
         tags: [
             "Nodes"
         ],
-        parameters: [],
+        parameters: [
+            {
+                in: "query",
+                description: "The limit on the number of users returned.",
+                name: "limit",
+                type: "integer",
+                required: false,
+                default: 500
+            },
+            {
+                in: "query",
+                description: "The offset on the number of users returned.",
+                name: "offset",
+                type: "integer",
+                required: false,
+                default: 0
+            }
+        ],
         security: [
             {
                 'BasicAuth': []
