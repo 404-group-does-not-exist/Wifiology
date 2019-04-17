@@ -20,7 +20,7 @@ function randomBytesAsync(size) {
 
 function randomHexStringAsync(size) {
     return new Promise((res, rej) => {
-       crypto.randomBytes(size/4, (err, result) => {
+       crypto.randomBytes(size/2, (err, result) => {
           err ? rej(err): res(result.toString('hex'))
        });
     });

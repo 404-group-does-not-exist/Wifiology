@@ -15,11 +15,12 @@ const apiDoc = require('./api/api-doc').apiDoc;
 const testThingService = require('./api/services/testThingService').testThingService;
 const usersServiceConstructor = require('./api/services/usersService');
 const apiKeysServiceConstructor = require('./api/services/apiKeysService');
+const nodesServiceConstructor = require('./api/services/nodesService');
+const measurementsServiceConstructor = require('./api/services/measurementsService');
 const securityAuthHandlerConstructor = require('./api/securityHandler');
 
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
-
 
 
 function createApplication(pg_conn_str){
@@ -74,7 +75,9 @@ function createApplication(pg_conn_str){
         dependencies: {
             testThingService,
             usersService: usersServiceConstructor(pool),
-            apiKeysService: apiKeysServiceConstructor(pool)
+            apiKeysService: apiKeysServiceConstructor(pool),
+            nodesService: nodesServiceConstructor(pool),
+            measurementsService: measurementsServiceConstructor(pool)
         },
         securityHandlers: securityAuthHandlerConstructor(pool),
         paths: './api/paths',

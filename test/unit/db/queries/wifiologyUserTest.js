@@ -1,4 +1,4 @@
-const { spawnClient } = require("../../tools");
+const { spawnClient } = require("../../../tools");
 
 const mocha = require('mocha');
 const chai = require('chai');

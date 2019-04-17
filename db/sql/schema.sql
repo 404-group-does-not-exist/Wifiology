@@ -20,27 +20,25 @@ CREATE TABLE IF NOT EXISTS wifiologyNode(
   nodeID SERIAL NOT NULL PRIMARY KEY,
   nodeName VARCHAR(256) UNIQUE NOT NULL,
   nodeLastSeenTime TIMESTAMP WITH TIME ZONE NULL,
-  nodeLocation TEXT NOT NULL,
-  nodeDescription TEXT NOT NULL,
+  nodeLocation VARCHAR(500) NOT NULL,
+  nodeDescription VARCHAR(8000) NOT NULL,
   ownerID INTEGER REFERENCES wifiologyUser(userID),
+  isPublic BOOLEAN DEFAULT FALSE,
   nodeData JSONB NOT NULL DEFAULT '{}'
 );
+
+CREATE INDEX IF NOT EXISTS wifiologyNodeOwnerID_IDX ON wifiologyNode(ownerID);
 
 CREATE TABLE IF NOT EXISTS measurement(
     measurementID BIGSERIAL NOT NULL PRIMARY KEY,
     measurementNodeID INTEGER NOT NULL REFERENCES wifiologyNode(nodeID),
-    measurementStartTime REAL NOT NULL,
-    measurementEndTime REAL NOT NULL,
+    measurementStartTime TIMESTAMP WITH TIME ZONE NOT NULL,
+    measurementEndTime TIMESTAMP WITH TIME ZONE NOT NULL,
     measurementDuration REAL NOT NULL,
     channel INTEGER NOT NULL,
-    managementFrameCount INTEGER NOT NULL,
-    controlFrameCount INTEGER NOT NULL,
-    rtsFrameCount INTEGER NOT NULL,
-    ctsFrameCount INTEGER NOT NULL,
-    ackFrameCount INTEGER NOT NULL,
-    dataFrameCount INTEGER NOT NULL,
-    dataThroughput INTEGER NOT NULL,
-    extraJSONData JSONB NOT NULL DEFAULT '{}'
+    averageNoise REAL,
+    stdDevNoise REAL,
+    extraData JSONB NOT NULL DEFAULT '{}'
 );
 
 CREATE INDEX IF NOT EXISTS measurement_channel_startTime_IDX ON measurement(channel, measurementStartTime);
@@ -49,13 +47,14 @@ CREATE INDEX IF NOT EXISTS measurement_channel_startTime_IDX ON measurement(chan
 CREATE TABLE IF NOT EXISTS station(
     stationID BIGSERIAL NOT NULL PRIMARY KEY,
     macAddress TEXT UNIQUE NOT NULL,
-    extraJSONData JSONB NOT NULL DEFAULT '{}'
+    extraData JSONB NOT NULL DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS serviceSet(
     serviceSetID BIGSERIAL NOT NULL PRIMARY KEY,
-    networkName TEXT UNIQUE NOT NULL,
-    extraJSONData JSONB NOT NULL DEFAULT '{}'
+    bssid VARCHAR(64) UNIQUE NOT NULL,
+    networkName TEXT,
+    extraData JSONB NOT NULL DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS infrastructureStationServiceSetMap(
@@ -64,29 +63,38 @@ CREATE TABLE IF NOT EXISTS infrastructureStationServiceSetMap(
      PRIMARY KEY(mapStationID, mapServiceSetID)
 );
 
+CREATE TABLE IF NOT EXISTS associationStationServiceSetMap(
+    associatedStationID BIGINT NOT NULL REFERENCES station(stationID),
+    associatedServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
+    PRIMARY KEY(associatedStationID, associatedServiceSetID)
+);
+
 CREATE TABLE IF NOT EXISTS measurementStationMap(
     mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID),
-    mapStationID BIGINT NOT NULL REFERENCES station(stationID), -- can we use the same name as line 30?
-    PRIMARY KEY(mapMeasurementID, mapStationID),
+    mapStationID BIGINT NOT NULL REFERENCES station(stationID),
     managementFrameCount INTEGER NOT NULL DEFAULT 0,
+    associationFrameCount INTEGER NOT NULL DEFAULT 0,
+    reassociationFrameCount INTEGER NOT NULL DEFAULT 0,
+    disassociationFrameCount INTEGER NOT NULL DEFAULT 0,
     controlFrameCount INTEGER NOT NULL DEFAULT 0,
     rtsFrameCount INTEGER NOT NULL DEFAULT 0,
     ctsFrameCount INTEGER NOT NULL DEFAULT 0,
     ackFrameCount INTEGER NOT NULL DEFAULT 0,
     dataFrameCount INTEGER NOT NULL DEFAULT 0,
-    dataThroughput INTEGER NOT NULL DEFAULT 0
+    dataThroughputIn INTEGER NOT NULL DEFAULT 0,
+    dataThroughputOut INTEGER NOT NULL DEFAULT 0,
+    retryFrameCount INTEGER NOT NULL DEFAULT 0,
+    averagePower REAL,
+    stdDevPower REAL,
+    lowestRate INTEGER,
+    highestRate INTEGER,
+    failedFCSCount INTEGER,
+    PRIMARY KEY(mapMeasurementID, mapStationID)
 );
 
 -- write select for this one and test it
 CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
     mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID), -- can we use the same name as line 36?
     mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
-    PRIMARY KEY(mapMeasurementID, mapServiceSetID),
-    managementFrameCount INTEGER NOT NULL DEFAULT 0,
-    controlFrameCount INTEGER NOT NULL DEFAULT 0,
-    rtsFrameCount INTEGER NOT NULL DEFAULT 0,
-    ctsFrameCount INTEGER NOT NULL DEFAULT 0,
-    ackFrameCount INTEGER NOT NULL DEFAULT 0,
-    dataFrameCount INTEGER NOT NULL DEFAULT 0,
-    dataThroughput INTEGER NOT NULL DEFAULT 0
+    PRIMARY KEY(mapMeasurementID, mapServiceSetID)
 );
