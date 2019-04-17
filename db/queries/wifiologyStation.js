@@ -28,8 +28,21 @@ async function selectWifiologyStationByMacAddress(client, macAddress) {
     }
 }
 
+async function selectWifiologyStationByStationID(client, stationID){
+    let result = await client.query(
+        `SELECT * FROM station WHERE stationID = $1`,
+        [stationID]
+    );
+    if(result.rows.length > 0) {
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 
 module.exports = {
     insertWifiologyStation,
-    selectWifiologyStationByMacAddress
+    selectWifiologyStationByMacAddress,
+    selectWifiologyStationByStationID
 };

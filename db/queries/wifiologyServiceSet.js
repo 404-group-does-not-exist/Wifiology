@@ -29,7 +29,20 @@ async function selectWifiologyServiceSetByBssid(client, bssid) {
     }
 }
 
+async function selectWifiologyServiceSetByServiceSetID(client, serviceSetID) {
+    let result = await client.query(
+        `SELECT * FROM serviceSet WHERE serviceSetID = $1`,
+        [serviceSetID]
+    );
+    if(result.rows.length > 0) {
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 module.exports = {
     insertWifiologyServiceSet,
-    selectWifiologyServiceSetByBssid
+    selectWifiologyServiceSetByBssid,
+    selectWifiologyServiceSetByServiceSetID
 };

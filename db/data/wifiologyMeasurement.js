@@ -92,6 +92,10 @@ async function loadNewMeasurementData(client, newMeasurementData, nodeID){
         )
     );
 
+    await Promise.all(Object.keys(bssidToNetworkNameMap).map((key, _) => {
+       return wifiologyLinkingTableQueries.updateServiceSetNetworkNameIfNeeded(client, key, bssidToNetworkNameMap[key]);
+    }));
+
     return {
         newMeasurement,
         stations,
@@ -100,6 +104,33 @@ async function loadNewMeasurementData(client, newMeasurementData, nodeID){
 }
 
 
+async function getMeasurementByID(client, measurementID){
+    return await wifiologyMeasurementQueries.selectWifiologyMeasurementByID(client, measurementID);
+}
+
+async function getMeasurementsByNodeID(client, nodeID, limit, lastPriorMeasurmentID=null){
+    return await wifiologyMeasurementQueries.selectAllWifiologyMeasurementsForNode(
+        client, nodeID, limit, lastPriorMeasurmentID
+    );
+}
+
+async function getMeasurementsByNodeIDAndChannel(client, nodeID, channel, limit, lastPriorMeasurmentID=null) {
+    return await wifiologyMeasurementQueries.selectAllWifiologyMeasurementsForNodeAndChannel(
+        client, nodeID, channel, limit, lastPriorMeasurmentID
+    );
+}
+
+async function getAggregateDataCountersForMeasurementIDs(client, measurementIDs){
+    return await wifiologyMeasurementQueries.selectAggregateDataCountersForWifiologyMeasurements(
+        client, measurementIDs
+    );
+}
+
+
 module.exports = {
-    loadNewMeasurementData
+    loadNewMeasurementData,
+    getMeasurementByID,
+    getMeasurementsByNodeID,
+    getMeasurementsByNodeIDAndChannel,
+    getAggregateDataCountersForMeasurementIDs
 };

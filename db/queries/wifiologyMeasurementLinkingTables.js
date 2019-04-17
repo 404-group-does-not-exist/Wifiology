@@ -39,7 +39,8 @@ async function insertServiceSetAssociatedStation(client, serviceSetID, stationMa
            associatedStationID, associatedServiceSetID
         ) SELECT s.stationID, $serviceSetID 
         FROM station AS s
-        WHERE s.macAddress = $stationMacAddress`,
+        WHERE s.macAddress = $stationMacAddress
+        ON CONFLICT (associatedStationID, associatedServiceSetID) DO NOTHING`,
         {serviceSetID, stationMacAddress}
     )
 }
@@ -50,8 +51,18 @@ async function insertServiceSetInfraStation(client, serviceSetID, stationMacAddr
            mapStationID, mapServiceSetID
         ) SELECT s.stationID, $serviceSetID 
         FROM station AS s
-        WHERE s.macAddress = $stationMacAddress`,
+        WHERE s.macAddress = $stationMacAddress 
+        ON CONFLICT (mapStationID, mapServiceSetID) DO NOTHING`,
         {serviceSetID, stationMacAddress}
+    )
+}
+
+async function updateServiceSetNetworkNameIfNeeded(client, bssid, networkName){
+    await client.query(
+        `UPDATE serviceSet 
+         SET networkName = $networkName 
+         WHERE bssid = $bssid AND networkName != $networkName`,
+        {bssid, networkName}
     )
 }
 
@@ -59,5 +70,6 @@ module.exports = {
     insertMeasurementStationLink,
     insertMeasurementServiceSet,
     insertServiceSetAssociatedStation,
-    insertServiceSetInfraStation
+    insertServiceSetInfraStation,
+    updateServiceSetNetworkNameIfNeeded
 };
