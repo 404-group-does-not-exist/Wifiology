@@ -43,7 +43,7 @@ async function selectWifiologyNodesByOwnerID(client, ownerID){
         "SELECT * FROM wifiologyNode WHERE ownerID = $1",
         [ownerID]
     );
-    return result.rows.map(fromRow);
+    return result.rows.map(r => fromRow(r));
 }
 
 async function selectAllWifiologyNodes(client, limit, offset){
@@ -51,7 +51,7 @@ async function selectAllWifiologyNodes(client, limit, offset){
         "SELECT * FROM wifiologyNode LIMIT $1 OFFSET $2",
         [limit, offset]
     );
-    return result.rows.map(fromRow);
+    return result.rows.map(r => fromRow(r));
 }
 
 

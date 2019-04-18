@@ -1,7 +1,7 @@
 class WifiologyMeasurement {
     constructor(measurementID, measurementNodeID, measurementStartTime,
                 measurementEndTime, measurementDuration, channel, averageNoise,
-                stdDevNoise, extraData) {
+                stdDevNoise, extraData, dataCounters=null) {
         this.measurementID = measurementID;
         this.measurementNodeID = measurementNodeID;
         this.measurementStartTime = measurementStartTime;
@@ -11,6 +11,7 @@ class WifiologyMeasurement {
         this.averageNoise = averageNoise;
         this.stdDevNoise = stdDevNoise;
         this.extraData = extraData;
+        this.dataCounters = dataCounters;
     }
 
     toRow() {
@@ -28,7 +29,7 @@ class WifiologyMeasurement {
     }
 
     toApiResponse() {
-        return {
+        let base_payload = {
             measurementID: this.measurementID,
             measurementNodeID: this.measurementNodeID,
             measurementStartTime: this.measurementStartTime,
@@ -38,15 +39,20 @@ class WifiologyMeasurement {
             averageNoise: this.averageNoise,
             stdDevNoise: this.stdDevNoise,
             extraData: this.extraData
+        };
+        if(this.dataCounters){
+            base_payload.dataCounters = this.dataCounters.toApiResponse();
         }
+        return base_payload;
     }
 }
 
-function fromRow(row) {
+function fromRow(row, dataCounters=null) {
     return new WifiologyMeasurement(
         row.measurementid, row.measurementnodeid, row.measurementstarttime,
         row.measurementendtime, row.measurementduration, row.channel,
-        row.averagenoise || null, row.stddevnoise || null, row.extradata
+        row.averagenoise || null, row.stddevnoise || null,
+        row.extradata, dataCounters
     );
 }
 
@@ -54,12 +60,12 @@ function dateFromEpochSeconds(es){
     return new Date(es*1000);
 }
 
-function fromAPI(apiData, nodeID){
+function fromAPI(apiData, nodeID, dataCounters=null){
     return new WifiologyMeasurement(
         null, nodeID, dateFromEpochSeconds(apiData.measurementStartTime),
         dateFromEpochSeconds(apiData.measurementEndTime), apiData.measurementDuration,
         apiData.channel, apiData.averageNoise || null, apiData.stdDevNoise || null,
-        apiData.extraData
+        apiData.extraData, dataCounters
     )
 }
 

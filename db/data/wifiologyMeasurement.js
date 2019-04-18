@@ -127,10 +127,41 @@ async function getAggregateDataCountersForMeasurementIDs(client, measurementIDs)
 }
 
 
+function measurementDataSetConstructor(client){
+    async function execute(measurement){
+        let stations = await wifiologyStationQueries.selectWifiologyStationsWithDataCountersByMeasurementID(
+            client, measurement.measurementID
+        );
+        let serviceSets;
+        return {
+            measurement: measurement,
+            stations: stations,
+            serviceSets: serviceSets
+        }
+    }
+    return execute;
+}
+
+
+async function getMeasurementDataSetsByNodeID(client, nodeID, limit, lastPriorMeasurementID=null){
+    let measurements = await getMeasurementsByNodeID(client, nodeID, limit, lastPriorMeasurementID);
+    let measurementDataCounters = await getAggregateDataCountersForMeasurementIDs(
+        client, measurements.map(m => m.measurementID)
+    );
+    for(let m of measurements){
+        m.dataCounters = measurementDataCounters[m.measurementID] || null;
+    }
+    return await Promise.all(
+        measurementDataSetConstructor(client)
+    );
+}
+
+
 module.exports = {
     loadNewMeasurementData,
     getMeasurementByID,
     getMeasurementsByNodeID,
     getMeasurementsByNodeIDAndChannel,
-    getAggregateDataCountersForMeasurementIDs
+    getAggregateDataCountersForMeasurementIDs,
+    getMeasurementDataSetsByNodeID
 };

@@ -44,6 +44,46 @@ function nodesServiceConstructor(dbPool){
             finally {
                 await release(client);
             }
+        },
+        async getNodeMeasurmentDataSetsAPI(nodeID, limit, lastPriorMeasurementID){
+            let client = await spawnClientFromPool(dbPool);
+            try {
+                let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
+
+                if(!node){
+                    throw {
+                        error: 'NoSuchNode',
+                        message: `A node with the ID ${nodeID} doesn't exist.`,
+                        status: 400
+                    }
+                }
+
+                if(node.ownerID !== userID && !node.isPublic){
+                    throw {
+                        error: 'UnprivilegedError',
+                        message: 'This user is not allowed to see measurements for this node.',
+                        status: 403
+                    }
+                }
+                let result = await wifiologyMeasurementData.getMeasurementDataSetsByNodeID(
+                    client, limit, lastPriorMeasurementID
+                );
+                let finalResult = {
+                    measurement: result.measurement.toApiResponse(),
+                    stations: result.stations.map(s => s.toApiResponse()),
+                    serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
+                };
+
+                await commit(client);
+                return finalResult;
+            }
+            catch(e){
+                await rollback(client);
+                throw e;
+            }
+            finally {
+                await release(client);
+            }
         }
     };
 }

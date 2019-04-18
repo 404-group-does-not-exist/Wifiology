@@ -41,7 +41,7 @@ async function selectAllWifiologyUsers(client, limit, offset) {
         "SELECT * FROM wifiologyUser ORDER BY userID LIMIT $1 OFFSET $2",
         [limit, offset]
     );
-    return result.rows.map(fromRow);
+    return result.rows.map(r => fromRow(r));
 }
 
 

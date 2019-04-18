@@ -1,8 +1,9 @@
 class WifiologyStation {
-    constructor(stationID, macAddress, extraData) {
+    constructor(stationID, macAddress, extraData, dataCounters=null) {
         this.stationID = stationID;
         this.macAddress = macAddress;
         this.extraData = extraData;
+        this.dataCounters = dataCounters;
     }
 
     toRow() {
@@ -14,23 +15,27 @@ class WifiologyStation {
     }
 
     toApiResponse() {
-        return {
+        let resp = {
             stationID: this.stationID,
             macAddress: this.macAddress,
             extraData: this.extraData
+        };
+        if(this.dataCounters){
+            resp.dataCounters = this.dataCounters.toApiResponse();
         }
+        return resp;
     }
 }
 
-function fromRow(row) {
+function fromRow(row, dataCounters=null) {
     return new WifiologyStation(
-        row.stationid, row.macaddress, row.extradata
+        row.stationid, row.macaddress, row.extradata, dataCounters
     );
 }
 
-function fromAPI(apiData){
+function fromAPI(apiData, dataCounters=null){
     return new WifiologyStation(
-       null, apiData.macAddress, apiData.extraData
+       null, apiData.macAddress, apiData.extraData, dataCounters
     );
 }
 

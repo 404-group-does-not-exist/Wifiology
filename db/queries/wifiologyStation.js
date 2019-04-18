@@ -1,4 +1,5 @@
 const { fromRow } = require('../models/wifiologyStation');
+const dataCountersFromRow = require('../models/wifiologyDataCounters');
 
 async function insertWifiologyStation(client, newWifiologyStation) {
     let result = await client.query(
@@ -40,9 +41,22 @@ async function selectWifiologyStationByStationID(client, stationID){
     }
 }
 
+async function selectWifiologyStationsWithDataCountersByMeasurementID(client, measurementID){
+    let result = await client.query(
+        `SELECT m.*, s.*
+         FROM measurementstationmap AS m
+         JOIN station AS s ON m.mapstationid = s.stationid
+         WHERE m.mapMeasurementID = $1
+        `,
+        [measurementID]
+    );
+    return result.rows.map(r => fromRow(r, dataCountersFromRow(r)));
+}
+
 
 module.exports = {
     insertWifiologyStation,
     selectWifiologyStationByMacAddress,
-    selectWifiologyStationByStationID
+    selectWifiologyStationByStationID,
+    selectWifiologyStationsWithDataCountersByMeasurementID
 };

@@ -121,7 +121,7 @@ function generateFakeRawMeasurment(extraData){
     }
 }
 
-describe('WifiologyNodeData', function(){
+describe('WifiologyMeasurementData', function(){
     beforeEach(async function(){
         let dbClient = await spawnClient(DATABASE_URL);
         try{
