@@ -44,7 +44,7 @@ function nodesServiceConstructor(dbPool){
             finally {
                 await release(client);
             }
-        },
+        }
         async getNodeMeasurementDataSetsAPI(nodeID, channel, limit, lastPriorMeasurementID, userID){
             let client = await spawnClientFromPool(dbPool);
             try {

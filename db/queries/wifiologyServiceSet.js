@@ -53,6 +53,7 @@ async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) 
     return result.rows.map(r => fromRow(r))
 }
 
+
 async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
     let result = await client.query(
         `SELECT s.macAddress 

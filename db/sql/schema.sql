@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
     PRIMARY KEY(mapMeasurementID, mapServiceSetID)
 );
 
+
 CREATE TABLE IF NOT EXISTS featureFlag(
     featureFlagKey VARCHAR(512) NOT NULL PRIMARY KEY,
     featureFlagValue JSONB NOT NULL
