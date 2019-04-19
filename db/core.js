@@ -12,11 +12,17 @@ function createPostgresPool(connectionString, ssl=false) {
 
 async function spawnClientFromPool(dbPool, beginTransaction=true) {
     let client = await dbPool.connect();
-    named.patch(client);
-    if(beginTransaction) {
-        await client.query("BEGIN");
+    try {
+        named.patch(client);
+        if (beginTransaction) {
+            await client.query("BEGIN");
+        }
+        return client;
     }
-    return client;
+    catch(e){
+        client.release();
+        throw e;
+    }
 }
 
 async function commit(client){
