@@ -8,14 +8,23 @@ function securityAuthHandlerConstructor(dbPool){
     async function BasicAuth(req, scopes, definition){
         let user = basicAuth(req);
 
-        if(!user){
+        if(!user) {
             return Promise.resolve(false);
         }
+
 
         let client = await spawnClientFromPool(dbPool);
         try{
             let retrievedUser = await getUserByUserName(client, user.name);
-            if(retrievedUser && await retrievedUser.verifyPassword(user.pass)){
+
+            if(retrievedUser && !retrievedUser.isActive){
+                throw {
+                    error: 'UserNotActivated',
+                    message: "This user is not yet activated! Please activate first.",
+                    status: 403
+                }
+            }
+            else if(retrievedUser && await retrievedUser.verifyPassword(user.pass)){
                 req.user = retrievedUser;
                 return Promise.resolve(true);
             }
@@ -36,8 +45,14 @@ function securityAuthHandlerConstructor(dbPool){
         let client = await spawnClientFromPool(dbPool);
         try {
             let retrievedUser = await getUserByApiKey(client, apiKey);
-
-            if (retrievedUser) {
+            if(retrievedUser && !retrievedUser.isActive){
+                throw {
+                    error: 'UserNotActivated',
+                    message: "This user is not yet activated! Please activate first.",
+                    status: 403
+                }
+            }
+            else if (retrievedUser) {
                 req.user = retrievedUser;
                 return Promise.resolve(true);
             } else {

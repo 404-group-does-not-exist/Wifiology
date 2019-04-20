@@ -14,10 +14,10 @@ async function getAllUsers(connection, limit, offset){
     return await wifiologyUserQueries.selectAllWifiologyUsers(connection, limit, offset);
 }
 
-async function createNewUser(transaction, emailAddress, userName, password, userData){
+async function createNewUser(transaction, emailAddress, userName, password, userData, isAdmin, isActive){
     // TODO: Check if duplicate email or username
     let newUserObject = await createNewWifiologyUserWithPassword(
-        emailAddress, userName, userData, password
+        emailAddress, userName, userData, password, isAdmin, isActive
     );
     newUserObject.userID = await wifiologyUserQueries.insertWifiologyUser(transaction, newUserObject);
     return newUserObject

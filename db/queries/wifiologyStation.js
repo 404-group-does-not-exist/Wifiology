@@ -1,5 +1,5 @@
 const { fromRow } = require('../models/wifiologyStation');
-const dataCountersFromRow = require('../models/wifiologyDataCounters');
+const dataCountersFromRow = require('../models/wifiologyDataCounters').fromRow;
 
 async function insertWifiologyStation(client, newWifiologyStation) {
     let result = await client.query(

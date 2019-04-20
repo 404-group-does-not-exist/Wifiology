@@ -45,7 +45,7 @@ function nodesServiceConstructor(dbPool){
                 await release(client);
             }
         },
-        async getNodeMeasurmentDataSetsAPI(nodeID, limit, lastPriorMeasurementID){
+        async getNodeMeasurementDataSetsAPI(nodeID, channel, limit, lastPriorMeasurementID, userID){
             let client = await spawnClientFromPool(dbPool);
             try {
                 let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
@@ -65,17 +65,26 @@ function nodesServiceConstructor(dbPool){
                         status: 403
                     }
                 }
-                let result = await wifiologyMeasurementData.getMeasurementDataSetsByNodeID(
-                    client, limit, lastPriorMeasurementID
-                );
-                let finalResult = {
-                    measurement: result.measurement.toApiResponse(),
-                    stations: result.stations.map(s => s.toApiResponse()),
-                    serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
-                };
+                let results;
+                if(!channel){
+                    results = await wifiologyMeasurementData.getMeasurementDataSetsByNodeID(
+                        client, nodeID, limit, lastPriorMeasurementID
+                    );
+                }
+                else {
+                    results = await wifiologyMeasurementData.getMeasurementDataSetsByNodeIDAndChannel(
+                        client, nodeID, channel, limit, lastPriorMeasurementID
+                    );
+                }
 
                 await commit(client);
-                return finalResult;
+                return results.map(r => {
+                    return {
+                        measurement: r.measurement.toApiResponse(),
+                        stations: r.stations.map(s => s.toApiResponse()),
+                        serviceSets: r.serviceSets.map(ss => ss.toApiResponse())
+                    }
+                });
             }
             catch(e){
                 await rollback(client);

@@ -9,6 +9,7 @@ const wifilogyNodeModels = require('../../../../db/models/wifiologyNode');
 const wifiologyCoreQueries = require("../../../../db/queries/core");
 const wifiologyUserData = require("../../../../db/data/wifiologyUser");
 const wifiologyNodeData = require("../../../../db/data/wifiologyNode");
+const wifiologyDBCore = require("../../../../db/core");
 
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
 
@@ -18,9 +19,8 @@ describe('WifiologyNodeData', function(){
     beforeEach(async function(){
         let dbClient = await spawnClient(DATABASE_URL);
         try{
-            await dbClient.query("DROP SCHEMA public cascade;");
-            await dbClient.query("CREATE SCHEMA public;");
-            await wifiologyCoreQueries.writeSchema(dbClient);
+            await wifiologyDBCore.resetDatabase(dbClient);
+            await wifiologyDBCore.doMigrationUpAsync(DATABASE_URL);
             testData.testUser = await wifiologyUserData.createNewUser(
                 dbClient, "foo@bar.com", "foobar", "foobar",
                 {}

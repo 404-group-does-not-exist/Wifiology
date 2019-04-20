@@ -6,6 +6,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 const wifiologyCoreQueries = require("../../db/queries/core");
+const wifiologyDBCore = require("../../db/core");
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
 
 
@@ -22,9 +23,8 @@ describe('Wifiology Node.js Application', function() {
   beforeEach(async function () {
     let dbClient = await spawnClient(DATABASE_URL);
     try{
-      await dbClient.query("DROP SCHEMA public cascade;");
-      await dbClient.query("CREATE SCHEMA public;");
-      await wifiologyCoreQueries.writeSchema(dbClient);
+        await wifiologyDBCore.resetDatabase(dbClient);
+        await wifiologyDBCore.doMigrationUpAsync(DATABASE_URL);
     }
     finally {
       await dbClient.end();

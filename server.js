@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const pg = require('pg');
 const openAPIinitialize = require('express-openapi').initialize;
 const swaggerUi = require('swagger-ui-express');
 const bodyParser = require('body-parser');
@@ -8,7 +7,7 @@ const winston = require('winston');
 const expressWinston = require('express-winston');
 
 
-const { createPostgresPool } = require('./db/core');
+const { createPostgresPool, doMigrationUpSync } = require('./db/core');
 
 const apiDoc = require('./api/api-doc').apiDoc;
 
@@ -18,13 +17,24 @@ const apiKeysServiceConstructor = require('./api/services/apiKeysService');
 const nodesServiceConstructor = require('./api/services/nodesService');
 const measurementsServiceConstructor = require('./api/services/measurementsService');
 const securityAuthHandlerConstructor = require('./api/securityHandler');
+const { FeatureFlags } = require('./db/data/featureFlags');
 
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
+let AUTOMIGRATE;
+if(process.env.AUTOMIGRATE){
+    AUTOMIGRATE = process.env.AUTOMIGRATE === 'true';
+} else {
+    AUTOMIGRATE = true;
+}
 
 
-function createApplication(pg_conn_str){
+function createApplication(pg_conn_str, automigrate){
     let application = express();
+    if(automigrate){
+        doMigrationUpSync(pg_conn_str);
+    }
+
     let pool = createPostgresPool(pg_conn_str, true);
 
     application
@@ -77,7 +87,8 @@ function createApplication(pg_conn_str){
             usersService: usersServiceConstructor(pool),
             apiKeysService: apiKeysServiceConstructor(pool),
             nodesService: nodesServiceConstructor(pool),
-            measurementsService: measurementsServiceConstructor(pool)
+            measurementsService: measurementsServiceConstructor(pool),
+            featureFlags: new FeatureFlags(pool)
         },
         securityHandlers: securityAuthHandlerConstructor(pool),
         paths: './api/paths',
@@ -104,4 +115,5 @@ winston.add(new winston.transports.Console({
 }));
 
 
-application = createApplication(DATABASE_URL).listen(PORT, () => console.log(`Listening on ${ PORT }`));
+application = createApplication(DATABASE_URL, AUTOMIGRATE)
+    .listen(PORT, () => console.log(`Listening on ${ PORT }`));

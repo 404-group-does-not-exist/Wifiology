@@ -6,12 +6,14 @@ const iterations = 10000;
 const hashAlgo = 'sha512';
 
 class WifiologyUser {
-    constructor(userID, emailAddress, userName, userData, passwordData) {
+    constructor(userID, emailAddress, userName, userData, passwordData, isAdmin, isActive) {
         this.userID = userID;
         this.emailAddress = emailAddress;
         this.userName = userName;
         this.userData = userData;
         this.passwordData = passwordData;
+        this.isAdmin = isAdmin;
+        this.isActive = isActive;
     }
 
     toRow() {
@@ -20,7 +22,9 @@ class WifiologyUser {
             emailAddress: this.emailAddress,
             userName: this.userName,
             userData: this.userData,
-            passwordData: this.passwordData
+            passwordData: this.passwordData,
+            isAdmin: this.isAdmin,
+            isActive: this.isActive
         }
     }
 
@@ -28,7 +32,9 @@ class WifiologyUser {
         return {
             userID: this.userID,
             emailAddress: this.emailAddress,
-            userName: this.userName
+            userName: this.userName,
+            isAdmin: this.isAdmin,
+            isActive: this.isActive
         }
     }
 
@@ -39,12 +45,15 @@ class WifiologyUser {
 }
 
 function fromRow(row){
-    return new WifiologyUser(row.userid, row.emailaddress, row.username, row.userdata, row.passworddata);
+    return new WifiologyUser(
+        row.userid, row.emailaddress, row.username, row.userdata, row.passworddata, row.isadmin, row.isactive
+    );
 }
 
-async function createNewWifiologyUserWithPassword(emailAddress, userName, userData, password, userID=null){
+async function createNewWifiologyUserWithPassword(emailAddress, userName, userData, password,
+                                                  isAdmin=false, isActive=false, userID=null){
     let hashedPassData = await generateHashedData(password, hashBytes, saltBytes, iterations, hashAlgo);
-    return new WifiologyUser(userID, emailAddress, userName, userData, hashedPassData);
+    return new WifiologyUser(userID, emailAddress, userName, userData, hashedPassData, isAdmin, isActive);
 }
 
 

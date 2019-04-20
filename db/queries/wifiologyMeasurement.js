@@ -32,22 +32,18 @@ async function selectWifiologyMeasurementByID(client, measurementID){
     }
 }
 
-async function selectAllWifiologyMeasurementsForNode(client, nodeID, limit, priorLastMeasurementID){
+async function selectAllWifiologyMeasurementsForNode(client, nodeID, limit, priorLastMeasurementID) {
     let queryString = "SELECT * FROM measurement WHERE measurementNodeID = $nodeID ";
     params = {nodeID, limit};
-    if(typeof priorLastMeasurementID !== 'undefined' && priorLastMeasurementID !== null) {
-        queryString += " AND measurementID < $measurmentID ";
+    if (typeof priorLastMeasurementID !== 'undefined' && priorLastMeasurementID !== null) {
+        queryString += " AND measurementID < $measurementID ";
         params.measurementID = priorLastMeasurementID;
     }
     queryString += " ORDER BY measurementID DESC LIMIT $limit ";
     let result = await client.query(
         queryString, params
     );
-    if(result.rows.length > 0){
-        return result.rows.map(r => fromRow(r));
-    } else {
-        return null;
-    }
+    return result.rows.map(r => fromRow(r));
 }
 
 async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, channel, limit, priorLastMeasurementID){
@@ -61,11 +57,7 @@ async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, c
     let result = await client.query(
         queryString, params
     );
-    if(result.rows.length > 0){
-        return result.rows.map(r => fromRow(r));
-    } else {
-        return null;
-    }
+    return result.rows.map(r => fromRow(r));
 }
 
 async function selectAggregateDataCountersForWifiologyMeasurements(client, measurementIDs){

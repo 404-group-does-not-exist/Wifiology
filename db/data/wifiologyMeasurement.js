@@ -132,7 +132,22 @@ function measurementDataSetConstructor(client){
         let stations = await wifiologyStationQueries.selectWifiologyStationsWithDataCountersByMeasurementID(
             client, measurement.measurementID
         );
-        let serviceSets;
+        let serviceSets = await wifiologyServiceSetQueries.selectWifiologyServiceSetsByMeasurementID(
+            client, measurement.measurementID
+        );
+        await Promise.all(
+            serviceSets.map(
+                async ss => {
+                    ss.infraMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetInfraMacAddresses(
+                        client, measurement.measurementID, ss.serviceSetID
+                    );
+                    ss.associatedMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetAssociatedMacAddresses(
+                        client, measurement.measurementID, ss.serviceSetID
+                    );
+                    return ss;
+                }
+            )
+        );
         return {
             measurement: measurement,
             stations: stations,
@@ -152,7 +167,20 @@ async function getMeasurementDataSetsByNodeID(client, nodeID, limit, lastPriorMe
         m.dataCounters = measurementDataCounters[m.measurementID] || null;
     }
     return await Promise.all(
-        measurementDataSetConstructor(client)
+        measurements.map(measurementDataSetConstructor(client))
+    );
+}
+
+async function getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel, limit, lastPriorMeasurementID=null){
+    let measurements = await getMeasurementsByNodeIDAndChannel(client, nodeID, channel, limit, lastPriorMeasurementID);
+    let measurementDataCounters = await getAggregateDataCountersForMeasurementIDs(
+        client, measurements.map(m => m.measurementID)
+    );
+    for(let m of measurements){
+        m.dataCounters = measurementDataCounters[m.measurementID] || null;
+    }
+    return await Promise.all(
+        measurements.map(measurementDataSetConstructor(client))
     );
 }
 
@@ -163,5 +191,6 @@ module.exports = {
     getMeasurementsByNodeID,
     getMeasurementsByNodeIDAndChannel,
     getAggregateDataCountersForMeasurementIDs,
-    getMeasurementDataSetsByNodeID
+    getMeasurementDataSetsByNodeID,
+    getMeasurementDataSetsByNodeIDAndChannel
 };

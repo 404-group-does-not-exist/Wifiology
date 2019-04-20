@@ -1,13 +1,17 @@
 function measurements(measurementsService){
     let operations = {
-        POST
+        GET, POST
     };
 
     async function GET(req, res, next) {
         let nodeID = req.params.nodeID;
-        let limit = req.params.limit;
-        let lastPriorMeasurementID = req.params.lastPriorMeasurementID;
-        res.status(200).json({});
+        let channel = req.query.channel;
+        let limit = req.query.limit;
+        let lastPriorMeasurementID = req.query.lastPriorMeasurementID || null;
+        let response = await measurementsService.getNodeMeasurementDataSetsAPI(
+            nodeID, channel, limit, lastPriorMeasurementID, req.user.userID
+        );
+        res.status(200).json(response);
     }
 
     async function POST(req, res, next) {
@@ -33,6 +37,14 @@ function measurements(measurementsService){
                 type: "integer",
                 description: "The ID of the Node making the measurement",
                 required: true
+            },
+            {
+                in: "query",
+                name: "channel",
+                type: "integer",
+                description: "The channel to filter measurements on.",
+                required: false,
+                default: null
             },
             {
                 in: "query",
