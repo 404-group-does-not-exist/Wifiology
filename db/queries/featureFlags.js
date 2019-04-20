@@ -20,8 +20,8 @@ async function selectFeatureFlag(client, key, defaultValue=null){
         "SELECT featureFlagValue FROM featureFlag WHERE featureFlagKey = $key",
         {key}
     );
-    if(result.rows.length > 1){
-        return result.rows[0].featureFlagValue;
+    if(result.rows.length >= 1){
+        return result.rows[0].featureflagvalue;
     } else {
         return defaultValue
     }
