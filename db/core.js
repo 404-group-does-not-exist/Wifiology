@@ -2,6 +2,7 @@ const pg = require('pg');
 const named = require('node-postgres-named');
 const Sync = require('sync');
 const DBMigrate = require('db-migrate');
+const path = require('path');
 
 
 function createPostgresPool(connectionString, ssl=false) {
@@ -12,7 +13,17 @@ function createPostgresPool(connectionString, ssl=false) {
 }
 
 async function doMigrationUpAsync(DATABASE_URL){
-    let dbmigrate = DBMigrate.getInstance(true, {env:{DATABASE_URL}});
+    let dbmigrate = DBMigrate.getInstance(
+        true,
+        {
+            env:{
+                DATABASE_URL
+            },
+            cmdOptions: {
+                "migrations-dir": path.resolve(path.dirname(__dirname), 'migrations')
+            }
+        }
+    );
     await dbmigrate.up();
 }
 
