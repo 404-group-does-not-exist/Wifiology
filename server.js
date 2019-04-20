@@ -109,11 +109,16 @@ function createApplication(pg_conn_str, automigrate){
     return application;
 }
 
+if (require.main === module) {
+    winston.add(new winston.transports.Console({
+        format: winston.format.simple()
+    }));
 
-winston.add(new winston.transports.Console({
-    format: winston.format.simple()
-}));
+    application = createApplication(DATABASE_URL, AUTOMIGRATE)
+        .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+}
 
 
-application = createApplication(DATABASE_URL, AUTOMIGRATE)
-    .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+module.exports = {
+    createApplication
+};
