@@ -6,11 +6,12 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const winston = require('winston');
 const expressWinston = require('express-winston');
+const flash = require('connect-flash');
 
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const authHandlerConstructor = require('./routes/authHandler');
+const passportAuthSetup = require('./routes/authSetup');
 const routeInstaller = require('./routes/wifiologyRoutes');
 
 
@@ -43,10 +44,12 @@ function createApplication(pg_conn_str, automigrate){
     }
 
     let pool = createPostgresPool(pg_conn_str, true);
+    let featureFlags = new FeatureFlags(pool);
 
     application.use(bodyParser.urlencoded({ extended: true }));
     application.use(bodyParser.json());
     application.use(cookieParser());
+
 
     application.use(expressWinston.logger({
         transports: [
@@ -67,7 +70,6 @@ function createApplication(pg_conn_str, automigrate){
         .use(express.static(path.join(__dirname, 'public')))
         .set('views', path.join(__dirname, 'views'))
         .set('view engine', 'ejs')
-        .get('/', (req, res) => res.render('pages/index'))
         .get('/db', async  (req, res) => {
             try {
                 const client = await pool.connect();
@@ -87,11 +89,10 @@ function createApplication(pg_conn_str, automigrate){
         swaggerUi.setup(null, {swaggerUrl: '/api/1.0/api-docs'})
     );
 
-    passport.use(new LocalStrategy(
-        authHandlerConstructor(pool)
-    ));
+    passportAuthSetup(passport, pool, featureFlags);
 
     application.use(session({secret: process.env.SECRET || 'qov8yHA3grUJ1PjWdntx'}));
+    application.use(flash());
     application.use(passport.initialize());
     application.use(passport.session());
 
@@ -106,7 +107,7 @@ function createApplication(pg_conn_str, automigrate){
             apiKeysService: apiKeysServiceConstructor(pool),
             nodesService: nodesServiceConstructor(pool),
             measurementsService: measurementsServiceConstructor(pool),
-            featureFlags: new FeatureFlags(pool)
+            featureFlags: featureFlags
         },
         securityHandlers: securityAuthHandlerConstructor(pool),
         paths: path.resolve(__dirname, 'api/paths'),

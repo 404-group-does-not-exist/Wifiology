@@ -1,21 +1,34 @@
 const wifiologyUserQueries = require('../queries/wifiologyUser');
 const { createNewWifiologyUserWithPassword } = require('../models/wifiologyUser');
 
+const validator = require("email-validator");
 
-async function getUserByUserName(connection, userName){
-    return await wifiologyUserQueries.selectWifiologyUserByUserName(connection, userName);
+
+async function getUserByUserName(client, userName){
+    return await wifiologyUserQueries.selectWifiologyUserByUserName(client, userName);
 }
 
-async function getUserByID(connection, userID){
-    return await wifiologyUserQueries.selectWifiologyUserByID(connection, userID);
+async function getUserByID(client, userID){
+    return await wifiologyUserQueries.selectWifiologyUserByID(client, userID);
 }
 
-async function getAllUsers(connection, limit, offset){
-    return await wifiologyUserQueries.selectAllWifiologyUsers(connection, limit, offset);
+async function getUserByEmailAddress(client, emailAddress){
+    return await wifiologyUserQueries.selectWifiologyUserByEmailAddress(client, emailAddress);
 }
 
-async function createNewUser(transaction, emailAddress, userName, password, userData, isAdmin, isActive){
-    // TODO: Check if duplicate email or username
+async function getAllUsers(client, limit, offset){
+    return await wifiologyUserQueries.selectAllWifiologyUsers(client, limit, offset);
+}
+
+async function createNewUser(transaction, emailAddress, userName, password, userData, isAdmin, isActive,
+                             checkEmailAddressValidity=true){
+    /*if(checkEmailAddressValidity && !validator.validate(emailAddress)){
+        throw {
+            error: 'InvalidEmailAddress',
+            message: `The email address provided: ${emailAddress} does not appear to be a valid email address.`
+            status: 400
+        }
+    }*/
     let newUserObject = await createNewWifiologyUserWithPassword(
         emailAddress, userName, userData, password, isAdmin, isActive
     );
@@ -26,6 +39,7 @@ async function createNewUser(transaction, emailAddress, userName, password, user
 module.exports ={
     getUserByUserName,
     getUserByID,
+    getUserByEmailAddress,
     getAllUsers,
     createNewUser
 };
