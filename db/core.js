@@ -2,10 +2,7 @@ const pg = require('pg');
 const named = require('node-postgres-named');
 const Sync = require('sync');
 const DBMigrate = require('db-migrate');
-<<<<<<< 1ca133e9853002dce4af80c47c617a18bd8b4635
 const path = require('path');
-=======
->>>>>>> More data retrieval stuff, and gearing up for deployment.
 
 
 function createPostgresPool(connectionString, ssl=false) {
