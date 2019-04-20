@@ -91,7 +91,7 @@ function createApplication(pg_conn_str, automigrate){
             featureFlags: new FeatureFlags(pool)
         },
         securityHandlers: securityAuthHandlerConstructor(pool),
-        paths: './api/paths',
+        paths: path.resolve(__dirname, 'api/paths'),
         promiseMode: true
     });
 
