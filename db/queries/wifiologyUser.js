@@ -2,7 +2,8 @@ const { fromRow } = require('../models/wifiologyUser');
 
 async function insertWifiologyUser(client, newWifiologyUser) {
     let result = await client.query(
-        "INSERT INTO wifiologyUser(emailAddress, userName, userData, passwordData) VALUES ($emailAddress, $userName, $userData, $passwordData) RETURNING userID",
+        "INSERT INTO wifiologyUser(emailAddress, userName, userData, passwordData, isAdmin, isActive) " +
+        "VALUES ($emailAddress, $userName, $userData, $passwordData, $isAdmin, $isActive) RETURNING userID",
         newWifiologyUser.toRow()
     );
     if(result.rows.length > 0){
@@ -41,7 +42,7 @@ async function selectAllWifiologyUsers(client, limit, offset) {
         "SELECT * FROM wifiologyUser ORDER BY userID LIMIT $1 OFFSET $2",
         [limit, offset]
     );
-    return result.rows.map(fromRow);
+    return result.rows.map(r => fromRow(r));
 }
 
 

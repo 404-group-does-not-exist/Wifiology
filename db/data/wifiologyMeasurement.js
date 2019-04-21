@@ -127,10 +127,70 @@ async function getAggregateDataCountersForMeasurementIDs(client, measurementIDs)
 }
 
 
+function measurementDataSetConstructor(client){
+    async function execute(measurement){
+        let stations = await wifiologyStationQueries.selectWifiologyStationsWithDataCountersByMeasurementID(
+            client, measurement.measurementID
+        );
+        let serviceSets = await wifiologyServiceSetQueries.selectWifiologyServiceSetsByMeasurementID(
+            client, measurement.measurementID
+        );
+        await Promise.all(
+            serviceSets.map(
+                async ss => {
+                    ss.infraMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetInfraMacAddresses(
+                        client, measurement.measurementID, ss.serviceSetID
+                    );
+                    ss.associatedMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetAssociatedMacAddresses(
+                        client, measurement.measurementID, ss.serviceSetID
+                    );
+                    return ss;
+                }
+            )
+        );
+        return {
+            measurement: measurement,
+            stations: stations,
+            serviceSets: serviceSets
+        }
+    }
+    return execute;
+}
+
+
+async function getMeasurementDataSetsByNodeID(client, nodeID, limit, lastPriorMeasurementID=null){
+    let measurements = await getMeasurementsByNodeID(client, nodeID, limit, lastPriorMeasurementID);
+    let measurementDataCounters = await getAggregateDataCountersForMeasurementIDs(
+        client, measurements.map(m => m.measurementID)
+    );
+    for(let m of measurements){
+        m.dataCounters = measurementDataCounters[m.measurementID] || null;
+    }
+    return await Promise.all(
+        measurements.map(measurementDataSetConstructor(client))
+    );
+}
+
+async function getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel, limit, lastPriorMeasurementID=null){
+    let measurements = await getMeasurementsByNodeIDAndChannel(client, nodeID, channel, limit, lastPriorMeasurementID);
+    let measurementDataCounters = await getAggregateDataCountersForMeasurementIDs(
+        client, measurements.map(m => m.measurementID)
+    );
+    for(let m of measurements){
+        m.dataCounters = measurementDataCounters[m.measurementID] || null;
+    }
+    return await Promise.all(
+        measurements.map(measurementDataSetConstructor(client))
+    );
+}
+
+
 module.exports = {
     loadNewMeasurementData,
     getMeasurementByID,
     getMeasurementsByNodeID,
     getMeasurementsByNodeIDAndChannel,
-    getAggregateDataCountersForMeasurementIDs
+    getAggregateDataCountersForMeasurementIDs,
+    getMeasurementDataSetsByNodeID,
+    getMeasurementDataSetsByNodeIDAndChannel
 };

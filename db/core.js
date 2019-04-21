@@ -1,5 +1,8 @@
 const pg = require('pg');
 const named = require('node-postgres-named');
+const Sync = require('sync');
+const DBMigrate = require('db-migrate');
+const path = require('path');
 
 
 function createPostgresPool(connectionString, ssl=false) {
@@ -9,14 +12,40 @@ function createPostgresPool(connectionString, ssl=false) {
     });
 }
 
+async function doMigrationUpAsync(DATABASE_URL){
+    let dbmigrate = DBMigrate.getInstance(
+        true,
+        {
+            env:{
+                DATABASE_URL
+            },
+            cmdOptions: {
+                "migrations-dir": path.resolve(path.dirname(__dirname), 'migrations')
+            }
+        }
+    );
+    await dbmigrate.up();
+}
+
+
+async function doMigrationUpSync(DATABASE_URL){
+    return Sync(doMigrationUpAsync(DATABASE_URL));
+}
+
 
 async function spawnClientFromPool(dbPool, beginTransaction=true) {
     let client = await dbPool.connect();
-    named.patch(client);
-    if(beginTransaction) {
-        await client.query("BEGIN");
+    try {
+        named.patch(client);
+        if (beginTransaction) {
+            await client.query("BEGIN");
+        }
+        return client;
     }
-    return client;
+    catch(e){
+        client.release();
+        throw e;
+    }
 }
 
 async function commit(client){
@@ -31,10 +60,18 @@ async function release(client){
     return Promise.resolve(client.release());
 }
 
+async function resetDatabase(client){
+    await client.query("DROP SCHEMA public cascade;");
+    await client.query("CREATE SCHEMA public;");
+}
+
 module.exports = {
     createPostgresPool,
     spawnClientFromPool,
     commit,
     rollback,
-    release
+    release,
+    doMigrationUpSync,
+    doMigrationUpAsync,
+    resetDatabase
 };

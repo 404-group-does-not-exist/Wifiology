@@ -41,8 +41,97 @@ async function selectWifiologyServiceSetByServiceSetID(client, serviceSetID) {
     }
 }
 
+async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) {
+    let result = await client.query(
+        `SELECT ss.*
+         FROM measurementservicesetmap AS m
+         JOIN serviceSet AS ss ON ss.servicesetid = m.mapservicesetid
+         WHERE m.mapmeasurementid = $1
+        `,
+        [measurementID]
+    );
+    return result.rows.map(r => fromRow(r))
+}
+
+async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
+    let result = await client.query(
+        `SELECT s.macAddress 
+         FROM station AS s 
+         WHERE s.stationID IN (
+             SELECT associatedStationID FROM associationStationServiceSetMap 
+             WHERE associatedServiceSetID = $serviceSetID
+         ) AND s.stationID IN (
+             SELECT mapStationID FROM measurementStationMap
+             WHERE mapMeasurementID = $measurementID
+         )`,
+        {measurementID, serviceSetID}
+    );
+    return result.rows;
+}
+
+async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetID){
+    let result = await client.query(
+        `SELECT s.macAddress 
+         FROM station AS s 
+         WHERE s.stationID IN (
+             SELECT mapStationID FROM infrastructureStationServiceSetMap 
+             WHERE mapServiceSetID = $serviceSetID
+         ) AND s.stationID IN (
+             SELECT mapStationID FROM measurementStationMap
+             WHERE mapMeasurementID = $measurementID
+         )`,
+        {measurementID, serviceSetID}
+    );
+    return result.rows;
+}
+
+
+/* TODO: Both hard and inaccurate any ways.
+async function selectAggregateDataCountersForServiceSetMeasurements(client, measurementID, serviceSetID){
+    let queryString = `
+    SELECT 
+        mapStationID,
+        SUM(m.managementFrameCount) AS managementFrameCount,
+        SUM(m.associationFrameCount) AS associationFrameCount,
+        SUM(m.reassociationFrameCount) AS reassociationFrameCount,
+        SUM(m.disassociationFrameCount) AS disassociationFrameCount,
+        SUM(m.controlFrameCount) AS controlFrameCount,
+        SUM(m.rtsFrameCount) AS rtsFrameCount,
+        SUM(m.ctsFrameCount) AS ctsFrameCount,
+        SUM(m.ackFrameCount) AS ackFrameCount,
+        SUM(m.dataFrameCount) AS dataFrameCount,
+        SUM(m.dataThroughputIn) AS dataThroughputIn,
+        SUM(m.dataThroughputOut) AS dataThroughputOut,
+        SUM(m.retryFrameCount) AS retryFrameCount,
+        null AS averagePower, -- TODO: weighted average support
+        null AS stdDevPower, -- TODO: weighted variance support
+        MIN(m.lowestRate) AS lowestRate,
+        MAX(m.highestRate) AS highestRate,
+        SUM(m.failedFCSCount) AS failedFCSCount
+    FROM measurementStationMap AS m    
+    GROUP BY m.mapmeasurementid
+    HAVING m.mapmeasurementid IN 
+    ` + placeholderConstructor(measurementIDs);
+    let result = await client.query(
+        queryString,
+        measurementIDs
+    );
+    if(result.rows.length > 0){
+        return result.rows.reduce((acc, row) => {
+            acc[row.mapmeasurementid] = dataCountersFromRow(row);
+            return acc;
+        }, {});
+    } else {
+        return null;
+    }
+
+}*/
+
 module.exports = {
     insertWifiologyServiceSet,
     selectWifiologyServiceSetByBssid,
-    selectWifiologyServiceSetByServiceSetID
+    selectWifiologyServiceSetByServiceSetID,
+    selectWifiologyServiceSetsByMeasurementID,
+    selectWifiologyServiceSetAssociatedMacAddresses,
+    selectWifiologyServiceSetInfraMacAddresses
 };

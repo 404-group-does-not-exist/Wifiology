@@ -106,6 +106,75 @@ let apiDoc = {
                 'retryFrameCount'
             ]
         },
+        WifiologyMeasurement: {
+            type: 'object',
+            properties: {
+                measurementID: { type: 'integer' },
+                measurementNodeID: { type: 'integer' },
+                measurementStartTime: { type: 'string' },
+                measurementEndTime: { type: 'string' },
+                measurementDuration: { type: 'number' },
+                channel: { type: 'integer' },
+                averageNoise: { type: 'number' },
+                stdDevNoise: { type: 'number' },
+                dataCounters: { $ref: '#/definitions/WifiologyDataCounters' },
+                extraData: { type: 'object' }
+            },
+            required: [
+                'measurementID', 'measurementNodeID', 'measurementStartTime', 'measurementEndTime',
+                'measurementDuration', 'channel', 'extraData'
+            ]
+        },
+        WifiologyStation: {
+            type: 'object',
+            properties: {
+                stationID: { type: 'integer' },
+                macAddress: { type: 'string' },
+                extraData: { type: 'object' },
+                dataCounters: { $ref: '#/definitions/WifiologyDataCounters' }
+            },
+            required: ['stationID', 'macAddress']
+        },
+        WifiologyServiceSet: {
+            type: 'object',
+            properties: {
+                serviceSetID: { type: 'integer' },
+                bssid: { type: 'string' },
+                networkName: { type: 'string' },
+                infrastructureMacAddresses: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                },
+                associatedMacAddresses: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                },
+                dataCounters: { $ref: '#/definitions/WifiologyDataCounters' },
+                extraData: {
+                    type: 'object'
+                }
+
+            },
+            required: ['serviceSetID', 'bssid']
+        },
+        WifiologyMeasurementDataSet: {
+            type: 'object',
+            properties: {
+                measurement: { $ref: '#/definitions/WifiologyMeasurement' },
+                stations: {
+                    type: 'array',
+                    items: { $ref: '#/definitions/WifiologyStations' }
+                },
+                serviceSets: {
+                    type: 'array',
+                    items: { $ref: '#/definitions/WifiologyServiceSets' }
+                }
+            }
+        },
         NewWifiologyMeasurementStation: {
             type: 'object',
             properties: {

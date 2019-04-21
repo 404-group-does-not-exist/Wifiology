@@ -5,7 +5,9 @@ const mocha = require('mocha');
 const chai = require('chai');
 const expect = chai.expect;
 
+const { createApplication } = require("../../server");
 const wifiologyCoreQueries = require("../../db/queries/core");
+const wifiologyDBCore = require("../../db/core");
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/wifiology";
 
 
@@ -22,24 +24,23 @@ describe('Wifiology Node.js Application', function() {
   beforeEach(async function () {
     let dbClient = await spawnClient(DATABASE_URL);
     try{
-      await dbClient.query("DROP SCHEMA public cascade;");
-      await dbClient.query("CREATE SCHEMA public;");
-      await wifiologyCoreQueries.writeSchema(dbClient);
+        await wifiologyDBCore.resetDatabase(dbClient);
+        await wifiologyDBCore.doMigrationUpAsync(DATABASE_URL);
     }
     finally {
       await dbClient.end();
     }
     // Start the app
-    const env = Object.assign({}, process.env, {PORT: 5000, DATABASE_URL: DATABASE_URL});
-    runtimeEnv.port = env.PORT;
-    console.log(`Starting application on port: ${env.PORT}`);
-    runtimeEnv.child = spawn('node', ['server.js'], {env});
-    await runtimeEnv.sleep(1000);
+    runtimeEnv.app = createApplication(DATABASE_URL, false);
+    runtimeEnv.server = runtimeEnv.app.listen(5000);
+    runtimeEnv.port = process.env.PORT;
+    console.log(`Starting application on port: ${process.env.PORT}`);
   });
 
   afterEach(async function() {
       console.log("Killing server");
-      runtimeEnv.child.kill();
+      //runtimeEnv.child.kill();
+      runtimeEnv.server.close();
   });
 
   it('should answer some GET requests with a reasonable status code', async function () {

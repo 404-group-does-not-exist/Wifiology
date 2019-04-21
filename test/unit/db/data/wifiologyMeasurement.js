@@ -13,6 +13,7 @@ const wifiologyNodeData = require("../../../../db/data/wifiologyNode");
 const wifiologyMeasurementData = require("../../../../db/data/wifiologyMeasurement");
 const wifiologyStationData = require('../../../../db/data/wifiologyStation');
 const wifiologyServiceSetData = require('../../../../db/data/wifiologyServiceSet');
+const wifiologyDBCore = require("../../../../db/core");
 
 const { WifiologyMeasurement } = require('../../../../db/models/wifiologyMeasurement');
 const { WifiologyStation } = require('../../../../db/models/wifiologyStation');
@@ -121,13 +122,12 @@ function generateFakeRawMeasurment(extraData){
     }
 }
 
-describe('WifiologyNodeData', function(){
+describe('WifiologyMeasurementData', function(){
     beforeEach(async function(){
         let dbClient = await spawnClient(DATABASE_URL);
         try{
-            await dbClient.query("DROP SCHEMA public cascade;");
-            await dbClient.query("CREATE SCHEMA public;");
-            await wifiologyCoreQueries.writeSchema(dbClient);
+            await wifiologyDBCore.resetDatabase(dbClient);
+            await wifiologyDBCore.doMigrationUpAsync(DATABASE_URL);
             testData.testUser = await wifiologyUserData.createNewUser(
                 dbClient, "foo@bar.com", "foobar", "foobar",
                 {}

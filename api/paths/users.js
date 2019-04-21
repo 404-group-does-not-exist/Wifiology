@@ -1,4 +1,4 @@
-function users(usersService){
+function users(usersService, featureFlags){
     let operations = {
         GET, POST
     };
@@ -12,8 +12,17 @@ function users(usersService){
 
     async function POST(req, res, next) {
         let newUserModel = req.body;
-        let userResponse = await usersService.createUserAPI(newUserModel);
-        res.status(200).json(userResponse);
+        console.log("FLAG: ", await featureFlags.getFlag("users/allowUserSignup", null, true));
+        if(await featureFlags.getFlag("users/allowUserSignup", null, true)){
+            let userResponse = await usersService.createUserAPI(newUserModel, featureFlags);
+            res.status(200).json(userResponse);
+        } else {
+            res.status(400).json({
+                error: 'UserRegistrationDisallowed',
+                message: 'New user registration is currently disallowed on this system!'
+            });
+        }
+
     }
 
     // NOTE: We could also use a YAML string here.

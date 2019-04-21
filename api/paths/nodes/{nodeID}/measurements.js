@@ -1,10 +1,17 @@
 function measurements(measurementsService){
     let operations = {
-        POST
+        GET, POST
     };
 
     async function GET(req, res, next) {
-        res.status(200).json({});
+        let nodeID = req.params.nodeID;
+        let channel = req.query.channel;
+        let limit = req.query.limit;
+        let lastPriorMeasurementID = req.query.lastPriorMeasurementID || null;
+        let response = await measurementsService.getNodeMeasurementDataSetsAPI(
+            nodeID, channel, limit, lastPriorMeasurementID, req.user.userID
+        );
+        res.status(200).json(response);
     }
 
     async function POST(req, res, next) {
@@ -17,6 +24,70 @@ function measurements(measurementsService){
 
     // NOTE: We could also use a YAML string here.
     GET.apiDoc = {
+        summary: 'Get the latest measurements and information',
+        operationId: 'getNodeMeasurementData',
+        tags: [
+            "Nodes",
+            "Measurements"
+        ],
+        parameters: [
+            {
+                in: "path",
+                name: "nodeID",
+                type: "integer",
+                description: "The ID of the Node making the measurement",
+                required: true
+            },
+            {
+                in: "query",
+                name: "channel",
+                type: "integer",
+                description: "The channel to filter measurements on.",
+                required: false,
+                default: null
+            },
+            {
+                in: "query",
+                description: "The limit on the number of users returned.",
+                name: "limit",
+                type: "integer",
+                required: false,
+                default: 500
+            },
+            {
+                in: "query",
+                description: "The last (lowest) measurement ID from the prior API call.",
+                name: "lastPriorMeasurementID",
+                type: "integer",
+                required: false,
+                default: null
+            }
+        ],
+        security: [
+            {
+                'BasicAuth': []
+            },
+            {
+                'ApiKeyAuth': []
+            }
+        ],
+        responses: {
+            200: {
+                description: 'A list of matching measurements that have been recorded.',
+                schema: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/definitions/WifiologyMeasurementDataSet'
+                    }
+                }
+            },
+            default: {
+                description: 'An error occurred',
+                schema: {
+                    additionalProperties: true
+                }
+            }
+        }
 
     };
 
@@ -55,10 +126,9 @@ function measurements(measurementsService){
         ],
         responses: {
             200: {
-                description: '???',
+                description: 'The resulting measurement data set.',
                 schema: {
-                    type: 'object'
-
+                    $ref: '#/definitions/WifiologyMeasurementDataSet'
                 }
             },
             default: {

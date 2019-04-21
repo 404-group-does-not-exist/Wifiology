@@ -44,6 +44,55 @@ function nodesServiceConstructor(dbPool){
             finally {
                 await release(client);
             }
+        },
+        async getNodeMeasurementDataSetsAPI(nodeID, channel, limit, lastPriorMeasurementID, userID){
+            let client = await spawnClientFromPool(dbPool);
+            try {
+                let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
+
+                if(!node){
+                    throw {
+                        error: 'NoSuchNode',
+                        message: `A node with the ID ${nodeID} doesn't exist.`,
+                        status: 400
+                    }
+                }
+
+                if(node.ownerID !== userID && !node.isPublic){
+                    throw {
+                        error: 'UnprivilegedError',
+                        message: 'This user is not allowed to see measurements for this node.',
+                        status: 403
+                    }
+                }
+                let results;
+                if(!channel){
+                    results = await wifiologyMeasurementData.getMeasurementDataSetsByNodeID(
+                        client, nodeID, limit, lastPriorMeasurementID
+                    );
+                }
+                else {
+                    results = await wifiologyMeasurementData.getMeasurementDataSetsByNodeIDAndChannel(
+                        client, nodeID, channel, limit, lastPriorMeasurementID
+                    );
+                }
+
+                await commit(client);
+                return results.map(r => {
+                    return {
+                        measurement: r.measurement.toApiResponse(),
+                        stations: r.stations.map(s => s.toApiResponse()),
+                        serviceSets: r.serviceSets.map(ss => ss.toApiResponse())
+                    }
+                });
+            }
+            catch(e){
+                await rollback(client);
+                throw e;
+            }
+            finally {
+                await release(client);
+            }
         }
     };
 }

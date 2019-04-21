@@ -32,22 +32,18 @@ async function selectWifiologyMeasurementByID(client, measurementID){
     }
 }
 
-async function selectAllWifiologyMeasurementsForNode(client, nodeID, limit, priorLastMeasurementID){
+async function selectAllWifiologyMeasurementsForNode(client, nodeID, limit, priorLastMeasurementID) {
     let queryString = "SELECT * FROM measurement WHERE measurementNodeID = $nodeID ";
     params = {nodeID, limit};
-    if(typeof priorLastMeasurementID !== 'undefined' && priorLastMeasurementID !== null) {
-        queryString += " AND measurementID < $measurmentID ";
+    if (typeof priorLastMeasurementID !== 'undefined' && priorLastMeasurementID !== null) {
+        queryString += " AND measurementID < $measurementID ";
         params.measurementID = priorLastMeasurementID;
     }
     queryString += " ORDER BY measurementID DESC LIMIT $limit ";
     let result = await client.query(
         queryString, params
     );
-    if(result.rows.length > 0){
-        return result.rows.map(fromRow);
-    } else {
-        return null;
-    }
+    return result.rows.map(r => fromRow(r));
 }
 
 async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, channel, limit, priorLastMeasurementID){
@@ -61,16 +57,12 @@ async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, c
     let result = await client.query(
         queryString, params
     );
-    if(result.rows.length > 0){
-        return result.rows.map(fromRow);
-    } else {
-        return null;
-    }
+    return result.rows.map(r => fromRow(r));
 }
 
 async function selectAggregateDataCountersForWifiologyMeasurements(client, measurementIDs){
-    let queryString = `
-    SELECT 
+    /*let queryString = `
+    SELECT
         mapMeasurementID,
         SUM(m.managementFrameCount) AS managementFrameCount,
         SUM(m.associationFrameCount) AS associationFrameCount,
@@ -91,15 +83,15 @@ async function selectAggregateDataCountersForWifiologyMeasurements(client, measu
         SUM(m.failedFCSCount) AS failedFCSCount
     FROM measurementstationmap AS m
     GROUP BY m.mapmeasurementid
-    HAVING m.mapmeasurementid IN 
-    ` + placeholderConstructor(measurementIDs);
+    HAVING m.mapmeasurementid IN
+    ` + placeholderConstructor(measurementIDs);*/
     let result = await client.query(
-        queryString,
-        measurementIDs
+        "SELECT * FROM dataCountersForMeasurements($array)",
+        {array: measurementIDs}
     );
     if(result.rows.length > 0){
         return result.rows.reduce((acc, row) => {
-            acc[row.mapmeasurementid] = dataCountersFromRow(row);
+            acc[row.measurementid] = dataCountersFromRow(row);
             return acc;
         }, {});
     } else {
