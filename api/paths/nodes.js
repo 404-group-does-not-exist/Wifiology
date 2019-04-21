@@ -6,7 +6,7 @@ function nodes(nodesService) {
     async function GET(req, res, next) {
         let limit = req.query.limit || 500;
         let offset = req.query.offset || 0;
-        let allNodes = await nodesService.getAllWifiologyNodes(limit, offset, req.user);
+        let allNodes = await nodesService.getAllNodesAPI(limit, offset, req.user);
         res.status(200).json(allNodes);
     }
 

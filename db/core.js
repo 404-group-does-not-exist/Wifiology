@@ -61,7 +61,7 @@ async function release(client){
 }
 
 async function resetDatabase(client){
-    await client.query("DROP SCHEMA public cascade;");
+    await client.query("DROP SCHEMA IF EXISTS public cascade;");
     await client.query("CREATE SCHEMA public;");
 }
 

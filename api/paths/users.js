@@ -12,7 +12,6 @@ function users(usersService, featureFlags){
 
     async function POST(req, res, next) {
         let newUserModel = req.body;
-        console.log("FLAG: ", await featureFlags.getFlag("users/allowUserSignup", null, true));
         if(await featureFlags.getFlag("users/allowUserSignup", null, true)){
             let userResponse = await usersService.createUserAPI(
                 newUserModel, featureFlags, req.headers['x-forwarded-for'] || req.connection.remoteAddress
