@@ -14,7 +14,9 @@ function users(usersService, featureFlags){
         let newUserModel = req.body;
         console.log("FLAG: ", await featureFlags.getFlag("users/allowUserSignup", null, true));
         if(await featureFlags.getFlag("users/allowUserSignup", null, true)){
-            let userResponse = await usersService.createUserAPI(newUserModel, featureFlags);
+            let userResponse = await usersService.createUserAPI(
+                newUserModel, featureFlags, req.headers['x-forwarded-for'] || req.connection.remoteAddress
+            );
             res.status(200).json(userResponse);
         } else {
             res.status(400).json({

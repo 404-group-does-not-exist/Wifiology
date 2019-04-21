@@ -39,7 +39,7 @@ function usersServiceConstructor(dbPool){
                 await release(client);
             }
         },
-        async createUserAPI(newUserData, featureFlags){
+        async createUserAPI(newUserData, featureFlags, remoteAddr=null){
             let client =  await spawnClientFromPool(dbPool);
 
             try {
@@ -48,7 +48,12 @@ function usersServiceConstructor(dbPool){
                     newUserData.emailAddress,
                     newUserData.userName,
                     newUserData.password,
-                    {description: newUserData.description || ""},
+                    {
+                        createdThrough: 'API',
+                        createdByIP: remoteAddr,
+                        createTime: new Date().toISOString(),
+                        description: newUserData.description || ""
+                    },
                     false,
                     await featureFlags.getFlag("users/autoActivate", client, true)
                 );

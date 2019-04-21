@@ -37,6 +37,18 @@ async function selectWifiologyUserByUserName(client, userName){
     }
 }
 
+async function selectWifiologyUserByEmailAddress(client, emailAddress){
+    let result = await client.query(
+        "SELECT * FROM wifiologyUser WHERE emailAddress = $1",
+        [emailAddress]
+    );
+    if(result.rows.length > 0){
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 async function selectAllWifiologyUsers(client, limit, offset) {
     let result = await client.query(
         "SELECT * FROM wifiologyUser ORDER BY userID LIMIT $1 OFFSET $2",
@@ -50,5 +62,6 @@ module.exports = {
     insertWifiologyUser,
     selectWifiologyUserByID,
     selectWifiologyUserByUserName,
+    selectWifiologyUserByEmailAddress,
     selectAllWifiologyUsers
 };

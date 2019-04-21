@@ -86,6 +86,39 @@ async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID,
 }
 
 
+async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
+    let result = await client.query(
+        `SELECT s.macAddress 
+         FROM station AS s 
+         WHERE s.stationID IN (
+             SELECT associatedStationID FROM associationStationServiceSetMap 
+             WHERE associatedServiceSetID = $serviceSetID
+         ) AND s.stationID IN (
+             SELECT mapStationID FROM measurementStationMap
+             WHERE mapMeasurementID = $measurementID
+         )`,
+        {measurementID, serviceSetID}
+    );
+    return result.rows;
+}
+
+async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetID){
+    let result = await client.query(
+        `SELECT s.macAddress 
+         FROM station AS s 
+         WHERE s.stationID IN (
+             SELECT mapStationID FROM infrastructureStationServiceSetMap 
+             WHERE mapServiceSetID = $serviceSetID
+         ) AND s.stationID IN (
+             SELECT mapStationID FROM measurementStationMap
+             WHERE mapMeasurementID = $measurementID
+         )`,
+        {measurementID, serviceSetID}
+    );
+    return result.rows;
+}
+
+
 /* TODO: Both hard and inaccurate any ways.
 async function selectAggregateDataCountersForServiceSetMeasurements(client, measurementID, serviceSetID){
     let queryString = `
