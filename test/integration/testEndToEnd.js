@@ -1,5 +1,5 @@
 const { spawn } = require('child_process');
-const { spawnClient } = require("../tools");
+const { spawnClient, randInt } = require("../tools");
 const axios = require('axios');
 const mocha = require('mocha');
 const chai = require('chai');
@@ -20,6 +20,7 @@ const runtimeEnv = {
   }
 };
 
+
 describe('Wifiology Node.js Application', function() {
   beforeEach(async function () {
     let dbClient = await spawnClient(DATABASE_URL);
@@ -32,9 +33,11 @@ describe('Wifiology Node.js Application', function() {
     }
     // Start the app
     runtimeEnv.app = createApplication(DATABASE_URL, false);
-    runtimeEnv.server = runtimeEnv.app.listen(5000);
-    runtimeEnv.port = process.env.PORT;
-    console.log(`Starting application on port: ${process.env.PORT}`);
+    let port = process.env.TEST_PORT || randInt(5001, 9000);
+    runtimeEnv.server = runtimeEnv.app.listen(port);
+
+    runtimeEnv.port = port;
+    console.log(`Starting application on port: ${port}`);
   });
 
   afterEach(async function() {
@@ -149,5 +152,54 @@ describe('Wifiology Node.js Application', function() {
     expect(resp3.data).to.be.eql(newUser);
 
 
+  }).timeout(1000);
+
+  it('should allow me to programmatically retrieve nodes from the database through the api', async function(){
+      let resp = await axios.post(
+          runtimeEnv.generateUrl("/api/1.0/users"),
+          {
+              emailAddress: "foo@bar.com",
+              userName: "foobar",
+              password: "testPass",
+              description: "myUser"
+          }
+      );
+      expect(resp.status).to.be.above(199).and.to.be.below(300);
+      let newUser = resp.data;
+      expect(newUser.userID).is.a('number');
+
+      let resp2 = await axios.post(
+          runtimeEnv.generateUrl(`/api/1.0/nodes`),
+          {
+              nodeName: "string",
+              nodeLocation: "string",
+              nodeDescription: "string",
+              isPublic: true,
+              nodeData: {foo: "bar"}
+          },
+          {
+              auth: {
+                  username: "foobar",
+                  password: "testPass"
+              }
+          }
+      );
+
+      expect(resp2.status).to.be.above(199).and.to.be.below(3000);
+      let newNode = resp2.data;
+      expect(newNode.nodeID).to.be.a('number');
+
+      let resp3 = await axios.get(
+          runtimeEnv.generateUrl('/api/1.0/nodes'),
+          {
+              auth: {
+                  username: "foobar",
+                  password: "testPass"
+              }
+          },
+      );
+      expect(resp3.status).to.be.above(199).and.to.be.below(300);
+      let nodes = resp3.data;
+      expect(nodes.find(n => n.nodeID === newNode.nodeID)).to.be.eql(newNode);
   }).timeout(1000);
 });

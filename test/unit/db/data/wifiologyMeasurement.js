@@ -1,4 +1,4 @@
-const { spawnClient } = require("../../../tools");
+const { spawnClient, randFloat, randBool, randInt, randomChoice, randRange } = require("../../../tools");
 
 const mocha = require('mocha');
 const chai = require('chai');
@@ -25,30 +25,6 @@ const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/
 let testData = {};
 
 
-function randfloat(lowerBound, upperBound){
-    return Number.parseFloat(
-        Number.parseFloat((Math.random() * upperBound) + lowerBound).toPrecision(6)
-    );
-}
-
-function randInt(lowerBound, upperBound){
-    return Math.floor((Math.random() * upperBound) + lowerBound);
-}
-
-function randomChoice(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-
-function randBool(threshold){
-    return Math.random() < threshold;
-}
-
-function randRange(min, max){
-    return [...Array(randInt(min, max)).keys()]
-}
-
-
 function generateFakeRawDataCounters(){
     let base = {
         associationFrameCount: randInt(0, 20),
@@ -61,8 +37,8 @@ function generateFakeRawDataCounters(){
         dataThroughputIn: randInt(0, 10000),
         dataThroughputOut: randInt(0, 25000),
         retryFrameCount: randInt(0, 75),
-        averagePower: randfloat(0, 100),
-        stdDevPower: randfloat(0, 20),
+        averagePower: randFloat(0, 100),
+        stdDevPower: randFloat(0, 20),
         lowestRate: randInt(0, 2),
         highestRate: randInt(2, 10),
         failedFCSCount: randInt(0, 3)
@@ -109,12 +85,12 @@ function generateFakeRawMeasurment(extraData){
     }
 
     return {
-        measurementStartTime: randfloat(0.0, 100.0),
-        measurementEndTime: randfloat(100.0, 200.0),
-        measurementDuration: randfloat(99, 101),
+        measurementStartTime: randFloat(0.0, 100.0),
+        measurementEndTime: randFloat(100.0, 200.0),
+        measurementDuration: randFloat(99, 101),
         channel: randInt(1, 11),
-        averageNoise: randfloat(0, 100),
-        stdDevNoise: randfloat(0, 20),
+        averageNoise: randFloat(0, 100),
+        stdDevNoise: randFloat(0, 20),
         stations: stations,
         serviceSets: [serviceSet],
         bssidToNetworkNameMap: bssidToNetworkNameMap,

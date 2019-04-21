@@ -4,10 +4,10 @@ const { spawnClientFromPool, commit, rollback, release } = require("../../db/cor
 
 function nodesServiceConstructor(dbPool){
     return  {
-        async getAllNodesAPI(limit, offset){
+        async getAllNodesAPI(limit, offset, user){
             let client = await spawnClientFromPool(dbPool);
             try {
-                let nodes = await wifiologyNodeData.getAllWifiologyNodes(client, limit, offset);
+                let nodes = await wifiologyNodeData.getAllWifiologyNodes(client, limit, offset, user);
                 let result = nodes.map(n => n.toApiResponse());
                 await commit(client);
                 return result;

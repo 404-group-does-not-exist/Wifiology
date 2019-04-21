@@ -46,10 +46,18 @@ async function selectWifiologyNodesByOwnerID(client, ownerID){
     return result.rows.map(r => fromRow(r));
 }
 
-async function selectAllWifiologyNodes(client, limit, offset){
+async function selectAllWifiologyNodes(client, limit, offset, filterUserID=null){
+    let baseQuery = "SELECT * FROM wifiologyNode";
+    let params = {limit, offset};
+    if(filterUserID !== null){
+        baseQuery += " WHERE isPublic = TRUE OR ownerID = $filterUserID";
+        params.filterUserID = filterUserID;
+    }
+    baseQuery += " LIMIT $limit OFFSET $offset";
+
     let result = await client.query(
-        "SELECT * FROM wifiologyNode LIMIT $1 OFFSET $2",
-        [limit, offset]
+        baseQuery,
+        params
     );
     return result.rows.map(r => fromRow(r));
 }

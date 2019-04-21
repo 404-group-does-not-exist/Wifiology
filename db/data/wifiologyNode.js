@@ -23,7 +23,8 @@ async function getWifiologyNodesByOwnerID(client, ownerID){
 }
 
 async function getAllWifiologyNodes(client, limit, offset, executingUser=null){
-    return await selectAllWifiologyNodes(client, limit, offset);
+    let targetUserID = executingUser ? executingUser.userID : null;
+    return await selectAllWifiologyNodes(client, limit, offset, targetUserID);
 }
 
 module.exports = {
