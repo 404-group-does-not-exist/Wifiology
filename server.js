@@ -31,7 +31,7 @@ const DATABASE_URL = process.env.DATABASE_URL || "postgres://postgres@127.0.0.1/
 
 function createApplication(pg_conn_str){
     let application = express();
-    let pool = createPostgresPool(pg_conn_str, true);
+    let pool = createPostgresPool(pg_conn_str, false);
 
     application.use(bodyParser.urlencoded({ extended: true }));
     application.use(bodyParser.json());

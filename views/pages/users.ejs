@@ -1,0 +1,25 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<br>
+<br>
+<div class="container">
+<table class='table table-striped table-bordered'>
+<caption>List of users</caption>
+<thead class="thead-light">
+<tr><th>Username</th><th>UserID</th><th>Email Address</th></tr></thread>
+<tbody>
+<% for(let user of users){%>
+<tr> <td><a href="/users/<%= user.userID %>"> <%= user.userName %></a></td>
+<td><%=user.userID %></td>
+<td><%=user.emailAddress %></td>
+
+</tr>
+
+
+
+<% } %>
+</tbody>
+</table>
+</div>
+
+<% include ../partials/footer-new.ejs %>
