@@ -1,5 +1,6 @@
 const { fromRow } = require('../models/wifiologyMeasurement');
 const dataCountersFromRow  = require('../models/wifiologyDataCounters').fromRow;
+const dataCounterZero = require('../models/wifiologyDataCounters').zero;
 const { placeholderConstructor } = require('../queries/core');
 
 async function insertWifiologyMeasurement(client, newWifiologyMeasurement) {
@@ -89,15 +90,16 @@ async function selectAggregateDataCountersForWifiologyMeasurements(client, measu
         "SELECT * FROM dataCountersForMeasurements($array)",
         {array: measurementIDs}
     );
-    if(result.rows.length > 0){
-        return result.rows.reduce((acc, row) => {
-            acc[row.measurementid] = dataCountersFromRow(row);
-            return acc;
-        }, {});
-    } else {
-        return null;
-    }
 
+    // Dumb ass kludge TODO: PLEASE FIX THIS
+    let dataCounters = {};
+    for(let measurementID of measurementIDs){
+        dataCounters[measurementID] = dataCounterZero();
+    }
+    return result.rows.reduce((acc, row) => {
+        acc[row.measurementid] = dataCountersFromRow(row);
+        return acc;
+    }, dataCounters);
 }
 
 module.exports = {

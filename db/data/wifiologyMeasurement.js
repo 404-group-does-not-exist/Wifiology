@@ -2,6 +2,7 @@ const wifiologyMeasurementQueries = require('../queries/wifiologyMeasurement');
 const wifiologyStationQueries = require('../queries/wifiologyStation');
 const wifiologyServiceSetQueries = require('../queries/wifiologyServiceSet');
 const wifiologyLinkingTableQueries = require('../queries/wifiologyMeasurementLinkingTables');
+const wifiologyNodeQueries = require('../queries/wifiologyNode');
 
 const measurementFromAPI = require('../models/wifiologyMeasurement').fromAPI;
 const stationFromAPI = require('../models/wifiologyStation').fromAPI;
@@ -70,6 +71,7 @@ function loadServiceSetAdditionalInfoConstructor(client, rawServiceSet, measurem
 
 async function loadNewMeasurementData(client, newMeasurementData, nodeID){
     let newMeasurement = measurementFromAPI(newMeasurementData, nodeID);
+    await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID);
     newMeasurement.measurementID = await wifiologyMeasurementQueries.insertWifiologyMeasurement(client, newMeasurement);
     let mID = newMeasurement.measurementID;
 
@@ -184,6 +186,14 @@ async function getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel,
     );
 }
 
+function measurementDataSetToApiResponse(mds){
+    return {
+        measurement: mds.measurement.toApiResponse(),
+        stations: mds.stations.map(s => s.toApiResponse()),
+        serviceSets: mds.serviceSets.map(ss => ss.toApiResponse())
+    }
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -192,5 +202,6 @@ module.exports = {
     getMeasurementsByNodeIDAndChannel,
     getAggregateDataCountersForMeasurementIDs,
     getMeasurementDataSetsByNodeID,
-    getMeasurementDataSetsByNodeIDAndChannel
+    getMeasurementDataSetsByNodeIDAndChannel,
+    measurementDataSetToApiResponse
 };

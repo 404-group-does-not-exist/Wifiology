@@ -62,11 +62,28 @@ async function selectAllWifiologyNodes(client, limit, offset, filterUserID=null)
     return result.rows.map(r => fromRow(r));
 }
 
+async function selectAllPublicWifiologyNodes(client, limit, offset){
+    let result = await client.query(
+        "SELECT * FROM wifiologyNode WHERE isPublic = TRUE LIMIT $limit OFFSET $offset",
+        {limit, offset}
+    );
+    return result.rows.map(r => fromRow(r));
+}
+
+async function updateNodeLastSeen(client, nodeID){
+    await client.query(
+        "UPDATE wifiologyNode SET nodeLastSeenTime = NOW() WHERE nodeID = $nodeID",
+        {nodeID}
+    )
+}
+
 
 module.exports = {
     insertWifiologyNode,
     selectWifiologyNodeByID,
     selectWifiologyNodeByName,
     selectWifiologyNodesByOwnerID,
-    selectAllWifiologyNodes
+    selectAllWifiologyNodes,
+    selectAllPublicWifiologyNodes,
+    updateNodeLastSeen
 };

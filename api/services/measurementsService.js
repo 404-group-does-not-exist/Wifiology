@@ -78,13 +78,7 @@ function nodesServiceConstructor(dbPool){
                 }
 
                 await commit(client);
-                return results.map(r => {
-                    return {
-                        measurement: r.measurement.toApiResponse(),
-                        stations: r.stations.map(s => s.toApiResponse()),
-                        serviceSets: r.serviceSets.map(ss => ss.toApiResponse())
-                    }
-                });
+                return results.map(wifiologyMeasurementData.measurementDataSetToApiResponse)
             }
             catch(e){
                 await rollback(client);

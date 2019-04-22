@@ -1,30 +1,36 @@
-const { insertWifiologyNode, selectAllWifiologyNodes,
-    selectWifiologyNodeByID, selectWifiologyNodeByName,
-    selectWifiologyNodesByOwnerID} = require('../queries/wifiologyNode');
+const wifiologyNodeQueries = require('../queries/wifiologyNode');
 const { createNewWifiologyNodeRecord } = require('../models/wifiologyNode');
 
 
 async function createNewWifiologyNode(client, nodeName, nodeLocation, nodeDescription, ownerID, isPublic, nodeData){
     let newRecord = createNewWifiologyNodeRecord(nodeName, nodeLocation, nodeDescription, ownerID, isPublic, nodeData);
-    newRecord.nodeID = await insertWifiologyNode(client, newRecord);
+    newRecord.nodeID = await wifiologyNodeQueries.insertWifiologyNode(client, newRecord);
     return newRecord;
 }
 
 async function getWifiologyNodeByID(client, nodeID){
-    return await selectWifiologyNodeByID(client, nodeID);
+    return await wifiologyNodeQueries.selectWifiologyNodeByID(client, nodeID);
 }
 
 async function getWifiologyNodeByName(client, nodeName){
-    return await selectWifiologyNodeByName(client, nodeName);
+    return await wifiologyNodeQueries.selectWifiologyNodeByName(client, nodeName);
 }
 
 async function getWifiologyNodesByOwnerID(client, ownerID){
-    return await selectWifiologyNodesByOwnerID(client, ownerID);
+    return await wifiologyNodeQueries.selectWifiologyNodesByOwnerID(client, ownerID);
 }
 
 async function getAllWifiologyNodes(client, limit, offset, executingUser=null){
     let targetUserID = executingUser ? executingUser.userID : null;
-    return await selectAllWifiologyNodes(client, limit, offset, targetUserID);
+    return await wifiologyNodeQueries.selectAllWifiologyNodes(client, limit, offset, targetUserID);
+}
+
+async function getAllPublicWifiologyNodes(client, limit, offset){
+    return await wifiologyNodeQueries.selectAllPublicWifiologyNodes(client, limit, offset);
+}
+
+async function wifiologyNodeHeartbeat(client, nodeID){
+    return await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID)
 }
 
 module.exports = {
@@ -32,5 +38,7 @@ module.exports = {
     getWifiologyNodeByID,
     getWifiologyNodeByName,
     getWifiologyNodesByOwnerID,
-    getAllWifiologyNodes
+    getAllWifiologyNodes,
+    getAllPublicWifiologyNodes,
+    wifiologyNodeHeartbeat
 };

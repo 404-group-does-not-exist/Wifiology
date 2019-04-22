@@ -1,0 +1,40 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<div class="container">
+    <div class="row">
+        <% include ../partials/alerts.ejs %>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h3>Node Information</h3>
+            <table class="table">
+                <tr><th>Node ID</th><td><%= node.nodeID%></td></tr>
+                <tr><th>Node Name</th><td><%= node.nodeName %></td></tr>
+                <tr><th>Node Location</th><td><%= node.nodeLocation %></td></tr>
+                <tr><th>Node Description</th><td><%= node.nodeDescription %></td></tr>
+                <tr><th>Node Last Seen</th><td><%= node.nodeLastSeenTime || 'Never' %></td></tr>
+            </table>
+        </div>
+        <div class="col">
+            <h3>Recent Data</h3>
+            <div id="node-recent-frame-counts-graph-container" class="chart-container">
+                <canvas id="node-recent-frame-counts-graph"></canvas>
+            </div>
+            <div id="node-recent-throughput-graph-container" class="chart-container">
+                <canvas id="node-recent-throughput-graph"></canvas>
+            </div>
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label for="channel-selector">Select Channel</label>
+                    <select class="form-control" id="channel-selector">
+                        <option value="0">All</option>
+                        <% for(let i = 1; i <= 11; i++) { %>
+                        <option value="<%= i%>">Channel <%= i%></option>
+                        <% } %>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<% include ../partials/footer-new.ejs %>
