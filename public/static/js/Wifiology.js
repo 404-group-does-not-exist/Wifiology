@@ -16,6 +16,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
     var latestFrameCounts = null;
     var latestThroughPut = null;
     var uniqueStationCount = null;
+    var lastRefreshElement = null;
 
     function framesPerSecond(dataCounterName){
         function applicator(datum){
@@ -166,6 +167,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                     },
                 );
                 populateServiceSets(data, channel);
+                lastRefreshElement.text(" (Last Refresh Time: " + new Date().toLocaleTimeString() + ") ");
                 lastMeasurementData = data;
             }
         )
@@ -191,7 +193,10 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                 clearTimeout(timedEvent);
             }
             if(automaticUpdateSelector.clicked){
-                timedEvent = setTimeout(function(){populateLatestData(currentChannel)}, 30000);
+                timedEvent = setTimeout(function(){
+                    populateLatestData(currentChannel);
+
+                }, 30000);
             }
         });
     }
@@ -215,6 +220,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                 type: 'line'
             }
         );
+        lastRefreshElement = $("#last-refresh-time");
         setupChannelSelector();
         setupAutomaticUpdateBox();
         populateLatestData();
