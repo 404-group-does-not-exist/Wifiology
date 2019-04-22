@@ -14,6 +14,14 @@
                 <tr><th>Node Description</th><td><%= node.nodeDescription %></td></tr>
                 <tr><th>Node Last Seen</th><td><%= node.nodeLastSeenTime || 'Never' %></td></tr>
             </table>
+            <h3>Recent Service Sets <span id="channel-info"></span></h3>
+            <table id="service-sets-table" class="table table-hover">
+                <thead>
+                    <tr><th>BSSID</th><th>Network Name</th></tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
         <div class="col">
             <h3>Recent Data</h3>
@@ -22,6 +30,9 @@
             </div>
             <div id="node-recent-throughput-graph-container" class="chart-container">
                 <canvas id="node-recent-throughput-graph"></canvas>
+            </div>
+            <div id="node-unique-station-count-graph-container" class="chart-container">
+                <canvas id="node-unique-station-count-graph"></canvas>
             </div>
             <div class="form-horizontal">
                 <div class="form-group">
@@ -32,6 +43,10 @@
                         <option value="<%= i%>">Channel <%= i%></option>
                         <% } %>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="automatic-update">Automatic Refresh</label>
+                    <input type="checkbox" id="automatic-update" name="automatic-update" value="automatic-update" checked>
                 </div>
             </div>
         </div>

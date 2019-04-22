@@ -10,6 +10,28 @@ function wifiologyNodesSetup(){
 }
 
 function wifiologyNodeSetup(nodeID, baseApiUrl){
+    var lastMeasurementData = null;
+    var currentChannel = null;
+
+    var latestFrameCounts = new Chart(
+        $("#node-recent-frame-counts-graph"),
+        {
+            type: 'line'
+        }
+    );
+    var latestThroughPut = new Chart(
+        $("#node-recent-throughput-graph"),
+        {
+            type: 'line'
+        }
+    );
+    var uniqueStationCount = new Chart(
+        $("#node-unique-station-count-graph"),
+        {
+            type: 'line'
+        }
+    );
+
     function framesPerSecond(dataCounterName){
         function applicator(datum){
             return parseInt(datum.measurement.dataCounters[dataCounterName])/datum.measurement.measurementDuration;
@@ -22,20 +44,39 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
         return startTime.toLocaleTimeString();
     }
 
+    function uniqueStationCounter(datum){
+        return datum.stations.length;
+    }
 
-    function populateLatestDataChart(channel=null){
-        var latestFrameCounts = new Chart(
-            $("#node-recent-frame-counts-graph"),
-            {
-                type: 'line'
+    function cleanupCharts(){
+        latestFrameCounts.destroy();
+        latestThroughPut.destroy();
+        uniqueStationCount.destroy();
+    }
+
+    function populateServiceSets(data, channel){
+        $("#channel-info").text(channel ? " (Channel " + channel + ") " : " (All Channels) ");
+        var serviceSets = {};
+        var tableBody = $("#service-sets-table tbody");
+
+
+        tableBody.empty();
+        console.log(data);
+
+        for(var i = 0; i < data.length; i++){
+            for(var j = 0; j < data[i].serviceSets.length; j++){
+                serviceSets[data[i].serviceSets[j].bssid] = data[i].serviceSets[j];
             }
-        );
-        var latestThroughPut = new Chart(
-            $("#node-recent-throughput-graph"),
-            {
-                type: 'line'
-            }
-        );
+        }
+        for(var bssid in serviceSets){
+            tableBody.append(
+                "<tr><td>" +  bssid + "</td><td>" + serviceSets[bssid].networkName + "</td></tr>"
+            )
+        }
+    }
+
+
+    function populateLatestData(channel=null){
         var measurementsAPI = baseApiUrl + "/nodes/" + nodeID + "/measurements";
         var queryParams = {};
         if(channel){
@@ -47,8 +88,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
             queryParams,
             function(data){
                 data.reverse();
-                latestFrameCounts.destroy();
-                latestThroughPut.destroy();
+                cleanupCharts();
 
                 latestFrameCounts = new Chart(
                     $("#node-recent-frame-counts-graph"),
@@ -89,7 +129,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
 
                 );
 
-                latestFrameCounts = new Chart(
+                latestThroughPut = new Chart(
                     $("#node-recent-throughput-graph"),
                     {
                         type: 'line',
@@ -115,6 +155,33 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
 
 
                 );
+
+                uniqueStationCount = new Chart(
+                    $("#node-unique-station-count-graph"),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: data.map(generateTimestamp),
+                            datasets: [
+                                {
+                                    label: 'Unique Station Count',
+                                    data: data.map(uniqueStationCounter),
+                                    borderColor: '#6470ef',
+                                    fill: true
+                                }
+                            ],
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                responsive: true,
+                                text: 'Unique Station Count ' + (channel ? ' (Channel ' + channel + ')' : '')
+                            }
+                        }
+                    },
+                );
+                populateServiceSets(data, channel);
+                lastMeasurementData = data;
             }
         )
     }
@@ -123,15 +190,30 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
         var channelSelector = $("#channel-selector");
         channelSelector.change(
             function(){
-                let channel = parseInt(channelSelector.val()) || null;
-                populateLatestDataChart(channel);
+                var channel = parseInt(channelSelector.val()) || null;
+                currentChannel = channel;
+                populateLatestData(channel);
             }
         );
     }
 
+    function setupAutomaticUpdateBox(){
+        var automaticUpdateSelector = $("#automatic-update");
+        var timedEvent = null;
+
+        automaticUpdateSelector.click(function(){
+            if(timedEvent){
+                clearTimeout(timedEvent);
+            }
+            if(automaticUpdateSelector.clicked){
+                timedEvent = setTimeout(function(){populateLatestData(currentChannel)}, 30000);
+            }
+        });
+    }
+
     $(document).ready(function(){
         setupChannelSelector();
-        populateLatestDataChart();
-
+        setupAutomaticUpdateBox();
+        populateLatestData();
     });
 }
