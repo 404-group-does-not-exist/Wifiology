@@ -13,24 +13,9 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
     var lastMeasurementData = null;
     var currentChannel = null;
 
-    var latestFrameCounts = new Chart(
-        $("#node-recent-frame-counts-graph"),
-        {
-            type: 'line'
-        }
-    );
-    var latestThroughPut = new Chart(
-        $("#node-recent-throughput-graph"),
-        {
-            type: 'line'
-        }
-    );
-    var uniqueStationCount = new Chart(
-        $("#node-unique-station-count-graph"),
-        {
-            type: 'line'
-        }
-    );
+    var latestFrameCounts = null;
+    var latestThroughPut = null;
+    var uniqueStationCount = null;
 
     function framesPerSecond(dataCounterName){
         function applicator(datum){
@@ -212,6 +197,24 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
     }
 
     $(document).ready(function(){
+        latestFrameCounts = new Chart(
+            $("#node-recent-frame-counts-graph"),
+            {
+                type: 'line'
+            }
+        );
+        latestThroughPut = new Chart(
+            $("#node-recent-throughput-graph"),
+            {
+                type: 'line'
+            }
+        );
+        uniqueStationCount = new Chart(
+            $("#node-unique-station-count-graph"),
+            {
+                type: 'line'
+            }
+        );
         setupChannelSelector();
         setupAutomaticUpdateBox();
         populateLatestData();
