@@ -46,8 +46,8 @@ function createApplication(pg_conn_str, automigrate){
     let pool = createPostgresPool(pg_conn_str, true);
     let featureFlags = new FeatureFlags(pool);
 
-    application.use(bodyParser.urlencoded({ extended: true }));
-    application.use(bodyParser.json());
+    application.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
+    application.use(bodyParser.json({ limit: '100mb'}));
     application.use(cookieParser());
 
 
@@ -95,7 +95,7 @@ function createApplication(pg_conn_str, automigrate){
     application.use(flash());
     application.use(passport.initialize());
     application.use(passport.session());
-
+    
     routeInstaller(application, passport, pool);
 
     openAPIinitialize({
