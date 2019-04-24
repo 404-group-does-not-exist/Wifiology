@@ -3,7 +3,7 @@ let apiDoc = {
     basePath: '/api/1.0',
     info: {
         title: 'Wifiology',
-        version: '0.1.0'
+        version: require('../info').version || '???'
     },
     definitions: {
         WifiologyUser: {

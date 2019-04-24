@@ -2,6 +2,7 @@ const wifiologyMeasurementQueries = require('../queries/wifiologyMeasurement');
 const wifiologyStationQueries = require('../queries/wifiologyStation');
 const wifiologyServiceSetQueries = require('../queries/wifiologyServiceSet');
 const wifiologyLinkingTableQueries = require('../queries/wifiologyMeasurementLinkingTables');
+const wifiologyNodeQueries = require('../queries/wifiologyNode');
 
 const measurementFromAPI = require('../models/wifiologyMeasurement').fromAPI;
 const stationFromAPI = require('../models/wifiologyStation').fromAPI;
@@ -49,17 +50,14 @@ async function lookupOrLoadNewServiceSet(client, rawNewServiceSet){
 
 function loadServiceSetAdditionalInfoConstructor(client, rawServiceSet, measurementID){
     async function execute(serviceSet){
-        await wifiologyLinkingTableQueries.insertMeasurementServiceSet(
-            client, measurementID, serviceSet.serviceSetID
-        );
         await Promise.all(rawServiceSet.associatedMacAddresses.map(
             macAddress => wifiologyLinkingTableQueries.insertServiceSetAssociatedStation(
-                client, serviceSet.serviceSetID, macAddress
+                client, measurementID, serviceSet.serviceSetID, macAddress
             )
         ));
         await Promise.all(rawServiceSet.infrastructureMacAddresses.map(
             macAddress => wifiologyLinkingTableQueries.insertServiceSetInfraStation(
-                client, serviceSet.serviceSetID, macAddress
+                client, measurementID, serviceSet.serviceSetID, macAddress
             )
         ));
         return serviceSet;
@@ -70,6 +68,7 @@ function loadServiceSetAdditionalInfoConstructor(client, rawServiceSet, measurem
 
 async function loadNewMeasurementData(client, newMeasurementData, nodeID){
     let newMeasurement = measurementFromAPI(newMeasurementData, nodeID);
+    await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID);
     newMeasurement.measurementID = await wifiologyMeasurementQueries.insertWifiologyMeasurement(client, newMeasurement);
     let mID = newMeasurement.measurementID;
 
@@ -135,19 +134,31 @@ function measurementDataSetConstructor(client){
         let serviceSets = await wifiologyServiceSetQueries.selectWifiologyServiceSetsByMeasurementID(
             client, measurement.measurementID
         );
-        await Promise.all(
+        let serviceSetIDs = serviceSets.map(ss => ss.serviceSetID);
+        let infraMacAddressMap = await wifiologyLinkingTableQueries.selectAggregateWifiologyServiceSetInfraMacAddresses(
+            client, measurement.measurementID, serviceSetIDs
+        );
+        let associatedMacAddressMap = await wifiologyLinkingTableQueries.selectAggregateWifiologyServiceSetAssociatedMacAddresses(
+            client, measurement.measurementID, serviceSetIDs
+        );
+        for(let serviceSet of serviceSets){
+            serviceSet.infraMacAddresses = infraMacAddressMap[serviceSet.serviceSetID] || [];
+            serviceSet.associatedMacAddresses = associatedMacAddressMap[serviceSet.serviceSetID] || [];
+        }
+
+        /*await Promise.all(
             serviceSets.map(
                 async ss => {
-                    ss.infraMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetInfraMacAddresses(
+                    ss.infraMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetInfraMacAddresses(
                         client, measurement.measurementID, ss.serviceSetID
                     );
-                    ss.associatedMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetAssociatedMacAddresses(
+                    ss.associatedMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetAssociatedMacAddresses(
                         client, measurement.measurementID, ss.serviceSetID
                     );
                     return ss;
                 }
             )
-        );
+        );*/
         return {
             measurement: measurement,
             stations: stations,
@@ -184,6 +195,28 @@ async function getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel,
     );
 }
 
+function measurementDataSetToApiResponse(mds){
+    return {
+        measurement: mds.measurement.toApiResponse(),
+        stations: mds.stations.map(s => s.toApiResponse()),
+        serviceSets: mds.serviceSets.map(ss => ss.toApiResponse())
+    }
+}
+
+async function cleanUpOldWifiologyMeasurements(client, maximumAgeDays){
+    for(let node of await wifiologyNodeQueries.selectAllWifiologyNodes(client, 9999, 0)){
+        await wifiologyMeasurementQueries.deleteNodeOldWifiologyMeasurements(
+            client, node.nodeID, maximumAgeDays
+        );
+    }
+}
+
+async function getWifiologyMeasurementByNodeIDChannelAndStartTime(client, nodeID, channel, startTime){
+    return await wifiologyMeasurementQueries.selectWifiologyMeasurementByNodeIDChannelAndStartTime(
+        client, nodeID, channel, startTime
+    )
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -192,5 +225,8 @@ module.exports = {
     getMeasurementsByNodeIDAndChannel,
     getAggregateDataCountersForMeasurementIDs,
     getMeasurementDataSetsByNodeID,
-    getMeasurementDataSetsByNodeIDAndChannel
+    getMeasurementDataSetsByNodeIDAndChannel,
+    measurementDataSetToApiResponse,
+    cleanUpOldWifiologyMeasurements,
+    getWifiologyMeasurementByNodeIDChannelAndStartTime
 };

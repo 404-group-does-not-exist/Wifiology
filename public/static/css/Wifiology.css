@@ -56,3 +56,11 @@
 .logged-in-as {
   padding-right: 1em;
 }
+
+.footer {
+  position: relative;
+  margin-top: -2em; /* negative value of footer height */
+  height: 2em;
+  clear:both;
+  padding-top:1em;
+}

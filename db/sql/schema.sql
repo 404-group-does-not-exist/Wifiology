@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS measurement(
     stdDevNoise REAL,
     extraData JSONB NOT NULL DEFAULT '{}'
 );
-
+CREATE INDEX IF NOT EXISTS measurement_node_startTime_IDX ON measurement(measurementNodeID, measurementStartTime);
+CREATE UNIQUE INDEX IF NOT EXISTS measurement_node_channel_startTime_UNIQUE_IDX ON measurement(measurementNodeID, channel, measurementStartTime);
 CREATE INDEX IF NOT EXISTS measurement_channel_startTime_IDX ON measurement(channel, measurementStartTime);
 
 
@@ -60,20 +61,27 @@ CREATE TABLE IF NOT EXISTS serviceSet(
 );
 
 CREATE TABLE IF NOT EXISTS infrastructureStationServiceSetMap(
-     mapStationID BIGINT NOT NULL REFERENCES station(stationID),
-     mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
+     mapStationID BIGINT NOT NULL REFERENCES station(stationID) ON DELETE CASCADE,
+     mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID) ON DELETE CASCADE,
+     measurementID BIGINT NOT NULL REFERENCES measurement(measurementID) ON DELETE CASCADE
      PRIMARY KEY(mapStationID, mapServiceSetID)
 );
+CREATE INDEX IF NOT EXISTS infrastructureStationServiceSetMap_measurement_IDX ON infrastructureStationServiceSetMap(measurementID);
+CREATE INDEX IF NOT EXISTS infrastructureStationServiceSetMap_measurement_serviceSet_IDX ON infrastructureStationServiceSetMap(measurementID, mapServiceSetID);
 
 CREATE TABLE IF NOT EXISTS associationStationServiceSetMap(
-    associatedStationID BIGINT NOT NULL REFERENCES station(stationID),
-    associatedServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
-    PRIMARY KEY(associatedStationID, associatedServiceSetID)
+    associatedStationID BIGINT NOT NULL REFERENCES station(stationID) ON DELETE CASCADE,
+    associatedServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID) ON DELETE CASCADE,
+    measurementID BIGINT NOT NULL REFERENCES measurement(measurementID) ON DELETE CASCADE,
+    PRIMARY KEY(associatedStationID, associatedServiceSetID, measurementID)
 );
+CREATE INDEX IF NOT EXISTS associationStationServiceSetMap_measurement_IDX ON associationStationServiceSetMap(measurementID);
+CREATE INDEX IF NOT EXISTS associationStationServiceSetMap_measurement_serviceSet_IDX ON associationStationServiceSetMap(measurementID, associatedServiceSetID);
+
 
 CREATE TABLE IF NOT EXISTS measurementStationMap(
-    mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID),
-    mapStationID BIGINT NOT NULL REFERENCES station(stationID),
+    mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID) ON DELETE CASCADE,
+    mapStationID BIGINT NOT NULL REFERENCES station(stationID) ON DELETE CASCADE,
     managementFrameCount INTEGER NOT NULL DEFAULT 0,
     associationFrameCount INTEGER NOT NULL DEFAULT 0,
     reassociationFrameCount INTEGER NOT NULL DEFAULT 0,
@@ -93,13 +101,14 @@ CREATE TABLE IF NOT EXISTS measurementStationMap(
     failedFCSCount INTEGER,
     PRIMARY KEY(mapMeasurementID, mapStationID)
 );
+CREATE INDEX IF NOT EXISTS measurementStationMap_measurement_IDX ON measurementStationMap(mapMeasurementID);
 
 -- write select for this one and test it
-CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
-    mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID), -- can we use the same name as line 36?
-    mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
-    PRIMARY KEY(mapMeasurementID, mapServiceSetID)
-);
+-- CREATE TABLE IF NOT EXISTS measurementServiceSetMap(
+--     mapMeasurementID BIGINT NOT NULL REFERENCES measurement(measurementID), -- can we use the same name as line 36?
+--     mapServiceSetID BIGINT NOT NULL REFERENCES serviceSet(serviceSetID),
+--     PRIMARY KEY(mapMeasurementID, mapServiceSetID)
+-- );
 
 
 CREATE TABLE IF NOT EXISTS featureFlag(
@@ -185,24 +194,24 @@ CREATE AGGREGATE weightedStdDev(stdDev REAL, weight REAL)(
 
 CREATE OR REPLACE FUNCTION dataCountersForMeasurements(measurementIDs BIGINT[])
   RETURNS TABLE (
-        measurementID BIGINT,
-        managementFrameCount BIGINT,
-        associationFrameCount BIGINT,
-        reassociationFrameCount BIGINT,
-        disassociationFrameCount BIGINT,
-        controlFrameCount BIGINT,
-        rtsFrameCount BIGINT,
-        ctsFrameCount BIGINT,
-        ackFrameCount BIGINT,
-        dataFrameCount BIGINT,
-        dataThroughputIn BIGINT,
-        dataThroughputOut BIGINT,
-        retryCount BIGINT,
-        averagePower REAL,
-        stdDevPower REAL,
-        lowestRate INTEGER,
-        higestRate INTEGER,
-        failedFCSCount BIGINT
+    measurementID BIGINT,
+    managementFrameCount BIGINT,
+    associationFrameCount BIGINT,
+    reassociationFrameCount BIGINT,
+    disassociationFrameCount BIGINT,
+    controlFrameCount BIGINT,
+    rtsFrameCount BIGINT,
+    ctsFrameCount BIGINT,
+    ackFrameCount BIGINT,
+    dataFrameCount BIGINT,
+    dataThroughputIn BIGINT,
+    dataThroughputOut BIGINT,
+    retryCount BIGINT,
+    averagePower REAL,
+    stdDevPower REAL,
+    lowestRate INTEGER,
+    higestRate INTEGER,
+    failedFCSCount BIGINT
   )
 AS
 $body$

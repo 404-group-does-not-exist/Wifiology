@@ -1,7 +1,7 @@
 const wifiologyUserData = require('../../db/data/wifiologyUser');
 const wifiologyNodeData = require('../../db/data/wifiologyNode');
 const wifiologyMeasurementData = require('../../db/data/wifiologyMeasurement');
-
+const measurementFromAPI = require('../../db/models/wifiologyMeasurement').fromAPI;
 
 const { spawnClientFromPool, commit, rollback, release } = require("../../db/core");
 
@@ -9,6 +9,7 @@ function nodesServiceConstructor(dbPool){
     return  {
         async createNewMeasurementAPI(newMeasurementData, nodeID, userID){
             let client = await spawnClientFromPool(dbPool);
+            let statusCode = 200;
             try {
                 let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
 
@@ -27,15 +28,30 @@ function nodesServiceConstructor(dbPool){
                         status: 403
                     }
                 }
-                let result = await wifiologyMeasurementData.loadNewMeasurementData(client, newMeasurementData, nodeID);
-                let finalResult = {
-                    measurement: result.newMeasurement.toApiResponse(),
-                    stations: result.stations.map(s => s.toApiResponse()),
-                    serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
-                };
+                let candidateMeasurement = measurementFromAPI(newMeasurementData, nodeID);
+                let finalResult;
+
+                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementByNodeIDChannelAndStartTime(
+                    client, nodeID, candidateMeasurement.channel, candidateMeasurement.startTime
+                );
+                if(existingMeasurement){
+                    finalResult = {
+                        warning: 'Measurement Already Exists',
+                        measurement: existingMeasurement.toApiResponse()
+                    };
+                    statusCode = 303;
+                } else{
+                    let result = await wifiologyMeasurementData.loadNewMeasurementData(client, newMeasurementData, nodeID);
+                    finalResult = {
+                        measurement: result.newMeasurement.toApiResponse(),
+                        stations: result.stations.map(s => s.toApiResponse()),
+                        serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
+                    };
+                }
+
 
                 await commit(client);
-                return finalResult;
+                return {result: finalResult, statusCode};
             }
             catch(e){
                 await rollback(client);
@@ -78,13 +94,7 @@ function nodesServiceConstructor(dbPool){
                 }
 
                 await commit(client);
-                return results.map(r => {
-                    return {
-                        measurement: r.measurement.toApiResponse(),
-                        stations: r.stations.map(s => s.toApiResponse()),
-                        serviceSets: r.serviceSets.map(ss => ss.toApiResponse())
-                    }
-                });
+                return results.map(wifiologyMeasurementData.measurementDataSetToApiResponse)
             }
             catch(e){
                 await rollback(client);

@@ -1,0 +1,63 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<div class="container">
+    <div class="row">
+        <% include ../partials/alerts.ejs %>
+    </div>
+    <div class="row">
+        <% if(!(userNodes.length > 0) && !(publicNodes.length > 0)) { %>
+        <p>No nodes currently available.</p>
+        <% }%>
+        <% if(userNodes.length > 0){ %>
+        <h1>My Nodes</h1>
+        <table id="myNodesTable" class="table table-hover table-bordered nodes-table">
+            <thead>
+                <tr>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Node Name</th>
+                    <th scope="col">Node Location</th>
+                    <th scope="col">Is Public</th>
+                    <th scope="col">Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+        <% for(let node of userNodes) { %>
+                <tr class="nodes-table-datarow">
+                    <td><a href="/nodes/<%= node.nodeID %>"><%= node.nodeID %></a></td>
+                    <td><%= node.nodeName %></td>
+                    <td><%= node.nodeLocation %></td>
+                    <td><%= node.isPublic %></td>
+                    <td><%= node.nodeLastSeenTime || 'Never' %></td>
+                </tr>
+        <% } %>
+            </tbody>
+        </table>
+        <% } %>
+        <% if(publicNodes.length > 0) { %>
+        <h1>Public Nodes</h1>
+        <table id="publicNodesTable" class="table table-hover table-bordered nodes-table">
+            <thead>
+            <tr>
+                <th scope="col">Node ID</th>
+                <th scope="col">Node Name</th>
+                <th scope="col">Node Location</th>
+                <th scope="col">Is Public</th>
+                <th scope="col">Last Seen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% for(let node of publicNodes) { %>
+                <tr class="nodes-table-datarow">
+                    <td><a href="/nodes/<%= node.nodeID %>"><%= node.nodeID %></a></td>
+                    <td><%= node.nodeName %></td>
+                    <td><%= node.nodeLocation %></td>
+                    <td><%= node.isPublic %></td>
+                    <td><%= node.nodeLastSeenTime || 'never' %></td>
+                </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <% } %>
+    </div>
+</div>
+<% include ../partials/footer-new.ejs %>

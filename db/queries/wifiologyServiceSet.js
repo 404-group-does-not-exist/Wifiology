@@ -16,7 +16,6 @@ async function insertWifiologyServiceSet(client, newWifiologyServiceSet) {
     }
 }
 
-
 async function selectWifiologyServiceSetByBssid(client, bssid) {
     let result = await client.query(
         `SELECT * FROM serviceSet WHERE bssid = $1`,
@@ -43,79 +42,15 @@ async function selectWifiologyServiceSetByServiceSetID(client, serviceSetID) {
 
 async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) {
     let result = await client.query(
-        `SELECT ss.*
-         FROM measurementservicesetmap AS m
-         JOIN serviceSet AS ss ON ss.servicesetid = m.mapservicesetid
-         WHERE m.mapmeasurementid = $1
+        `SELECT DISTINCT ss.*
+         FROM serviceSet AS ss
+         LEFT JOIN associationStationServiceSetMap AS a ON ss.serviceSetID = a.associatedServiceSetID
+         LEFT JOIN infrastructureStationServiceSetMap AS i ON ss.serviceSetID = i.mapServiceSetID
+         WHERE a.measurementID = $measurementID OR i.measurementID = $measurementID
         `,
-        [measurementID]
+        {measurementID}
     );
     return result.rows.map(r => fromRow(r))
-}
-
-async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s 
-         WHERE s.stationID IN (
-             SELECT associatedStationID FROM associationStationServiceSetMap 
-             WHERE associatedServiceSetID = $serviceSetID
-         ) AND s.stationID IN (
-             SELECT mapStationID FROM measurementStationMap
-             WHERE mapMeasurementID = $measurementID
-         )`,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
-}
-
-async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s 
-         WHERE s.stationID IN (
-             SELECT mapStationID FROM infrastructureStationServiceSetMap 
-             WHERE mapServiceSetID = $serviceSetID
-         ) AND s.stationID IN (
-             SELECT mapStationID FROM measurementStationMap
-             WHERE mapMeasurementID = $measurementID
-         )`,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
-}
-
-
-async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s 
-         WHERE s.stationID IN (
-             SELECT associatedStationID FROM associationStationServiceSetMap 
-             WHERE associatedServiceSetID = $serviceSetID
-         ) AND s.stationID IN (
-             SELECT mapStationID FROM measurementStationMap
-             WHERE mapMeasurementID = $measurementID
-         )`,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
-}
-
-async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s 
-         WHERE s.stationID IN (
-             SELECT mapStationID FROM infrastructureStationServiceSetMap 
-             WHERE mapServiceSetID = $serviceSetID
-         ) AND s.stationID IN (
-             SELECT mapStationID FROM measurementStationMap
-             WHERE mapMeasurementID = $measurementID
-         )`,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
 }
 
 
@@ -164,7 +99,5 @@ module.exports = {
     insertWifiologyServiceSet,
     selectWifiologyServiceSetByBssid,
     selectWifiologyServiceSetByServiceSetID,
-    selectWifiologyServiceSetsByMeasurementID,
-    selectWifiologyServiceSetAssociatedMacAddresses,
-    selectWifiologyServiceSetInfraMacAddresses
+    selectWifiologyServiceSetsByMeasurementID
 };
