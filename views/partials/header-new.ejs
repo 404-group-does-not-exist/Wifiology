@@ -7,6 +7,8 @@
     <title><%= locals.title || 'Wifiology' %></title>
 	
 	<link rel='icon' href='../resources/img/favicon.ico' type='image/x-icon'/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+
     <!-- Bootstrap core CSS -->
 	<% if(locals.useDefaultBootrap) { %>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
@@ -17,24 +19,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <script src="https://github.com/nagix/chartjs-plugin-colorschemes/releases/download/v0.3.0/chartjs-plugin-colorschemes.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
     <script src="/static/js/Wifiology.js"></script>
     <% if(locals.scriptToRun) { %>
     <script type="application/javascript"><%- locals.scriptToRun %></script>
     <% }%>
 
-    <script type="text/mustache-template" id="ss-item-top-level-template">
-      <li class="list-group-item px-0">
-        <a class="btn" data-toggle="collapse" href="#{{ id }}" role="button" aria-expanded="true" aria-controls="collapseExample1">
-          <span class="mr-3"></span> {{ networkName }} ( {{ bssidCount }} Access Points )
-        </a>
-        <div class="collapse" id="{{ id }}">
-          <div class="card card-body mt-2">
-            {{ bssidList }}
-          </div>
-        </div>
-      </li>
-    </script>
+    <% include templates.ejs %>
 
     <!-- Custom styles for this template -->
     <link href="/static/css/Wifiology.css" rel="stylesheet">

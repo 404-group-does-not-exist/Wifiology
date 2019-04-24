@@ -206,7 +206,7 @@ CREATE OR REPLACE FUNCTION dataCountersForMeasurements(measurementIDs BIGINT[])
     dataFrameCount BIGINT,
     dataThroughputIn BIGINT,
     dataThroughputOut BIGINT,
-    retryCount BIGINT,
+    retryFrameCount BIGINT,
     averagePower REAL,
     stdDevPower REAL,
     lowestRate INTEGER,

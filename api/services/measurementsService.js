@@ -1,7 +1,6 @@
 const wifiologyUserData = require('../../db/data/wifiologyUser');
 const wifiologyNodeData = require('../../db/data/wifiologyNode');
 const wifiologyMeasurementData = require('../../db/data/wifiologyMeasurement');
-const measurementFromAPI = require('../../db/models/wifiologyMeasurement').fromAPI;
 
 const { spawnClientFromPool, commit, rollback, release } = require("../../db/core");
 
@@ -28,11 +27,10 @@ function nodesServiceConstructor(dbPool){
                         status: 403
                     }
                 }
-                let candidateMeasurement = measurementFromAPI(newMeasurementData, nodeID);
                 let finalResult;
 
-                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementByNodeIDChannelAndStartTime(
-                    client, nodeID, candidateMeasurement.channel, candidateMeasurement.startTime
+                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementDuplicate(
+                    client, newMeasurementData,  nodeID
                 );
                 if(existingMeasurement){
                     finalResult = {

@@ -1,0 +1,93 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<div class="container">
+    <div class="row">
+        <% include ../partials/alerts.ejs %>
+    </div>
+    <div class="row">
+        <h1>Node <%= node.nodeID%> Latest Data</h1>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div id="node-recent-data-graph-container" class="chart-container">
+                <canvas id="node-recent-frame-counts-graph"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-horizontal">
+                <div id="data-counters-selectors">
+                    <div class="form-check form-check-inline">
+                       <input id="managementFrameCountCheckbox" class="form-check-input" type="checkbox" value="managementFrameCount" checked><label class="form-check-label" for="managementFrameCountCheckbox">Management Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input id="controlFrameCountCheckbox" class="form-check-input" type="checkbox" value="controlFrameCount" checked><label class="form-check-label" for="controlFrameCountCheckbox">Control Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input id="dataFrameCountCheckbox" class="form-check-input" type="checkbox" value="dataFrameCount" checked><label class="form-check-label" for="dataFrameCountCheckbox">Data Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="associationFrameCount"><label class="form-check-label">Association Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="reassociationFrameCount"><label class="form-check-label">Reassociation Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="disassociationFrameCount"><label class="form-check-label">Disassociation Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="rtsFrameCount"><label class="form-check-label">RTS Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="ctsFrameCount"><label class="form-check-label">CTS Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="ackFrameCount"><label class="form-check-label">ACK Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="dataThroughputIn"><label class="form-check-label">Data Throughput In</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="dataThroughputOut"><label class="form-check-label">Data Throughput Out</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="retryFrameCount"><label class="form-check-label">Retry Frame Count</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="averagePower"><label class="form-check-label">Average Power dBm</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="stdDevPower"><label class="form-check-label">Std. Dev. Power dBm</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="lowestRate"><label class="form-check-label">Lowest Rate (raw)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="highestRate"><label class="form-check-label">Highest Rate (raw)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="failedFCSCount"><label class="form-check-label">Failed FCS Count</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="channel-selector">Select Channel</label>
+                    <select class="form-control" id="channel-selector">
+                        <option value="0">All</option>
+                        <% for(let i = 1; i <= 11; i++) { %>
+                            <option value="<%= i%>">Channel <%= i%></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <a href="/nodes/<%= node.nodeID %>" class="btn btn-dark btn-block">Open Node Summary</a>
+                </div>
+                <div class="form-group">
+                    <label for="automatic-update">Automatic Refresh <span id="last-refresh-time"></span></label>
+                    <input type="checkbox" id="automatic-update" name="automatic-update" value="automatic-update" checked>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<% include ../partials/footer-new.ejs %>

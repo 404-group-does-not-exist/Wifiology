@@ -59,8 +59,27 @@
 
 .footer {
   position: relative;
-  margin-top: -2em; /* negative value of footer height */
+  bottom: 0;
+  width: 100%;
+  margin-top: 2em; /* negative value of footer height */
   height: 2em;
   clear:both;
   padding-top:1em;
+}
+
+.list-button-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.list-button-link:hover
+{
+  color: inherit;
+  text-decoration:none;
+}
+
+
+
+.list-button-link .fa:before {
+  content: "\f13a";
 }

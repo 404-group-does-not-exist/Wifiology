@@ -46,40 +46,50 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
         var list = $("#service-sets-list-group");
         var networkName;
         var bssid;
+        var bssidList;
         var id;
+        var i;
+        var outerSSTemplate = $("#ss-item-top-level-template").text();
+        var innerSSTemplate = $("#ss-item-bssid-subitem-template").text();
 
         list.empty();
-        console.log(data);
 
         for(var i = 0; i < data.length; i++){
             for(var j = 0; j < data[i].serviceSets.length; j++){
                 networkName = data[i].serviceSets[j].networkName;
                 bssid = data[i].serviceSets[j].bssid;
                 if(serviceSets.hasOwnProperty(networkName)){
-                    if(!serviceSets[networkName].include(bssid)){
-                        serviceSets[networkName].push(bssid);
+                    if(!serviceSets[networkName].bssids.includes(bssid)){
+                        serviceSets[networkName].bssids.push(bssid);
                     }
                 } else {
                     serviceSets[networkName] = {
                         bssids: [bssid]
                     }
                 }
-                serviceSets[data[i].serviceSets[j].bssid] = data[i].serviceSets[j];
             }
         }
+        i = 0;
         for(networkName in serviceSets){
-           id = "serviceSetList-" + networkName;
+           id = "serviceSetList-" + i;
+           i++;
+
+           console.log(networkName, id);
+           bssidList = "";
+           for(bssid of serviceSets[networkName].bssids){
+               bssidList = bssidList.concat(Mustache.render(innerSSTemplate, {bssid: bssid}))
+           }
+
            list.append(
-               '<li class="list-group-item px-0">\n' +
-               '<a class="btn" data-toggle="collapse" href="#' + id + '" role="button" aria-expanded="true" aria-controls="collapseExample1">\n' +
-               '   <span class="mr-3"></span>' + networkName + '\n' +
-               '</a>\n' +
-               '<div class="collapse" id="' + id + '">\n' +
-               '    <div class="card card-body mt-2">\n' +
-               '    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.\n' +
-               '    </div>\n' +
-               '</div>' +
-               '</li>'
+               Mustache.render(
+                   outerSSTemplate,
+                   {
+                       id: id,
+                       networkName: networkName,
+                       bssidCount: serviceSets[networkName].bssids.length,
+                       bssidList: bssidList
+                   }
+               )
            );
         }
         /*for(var bssid in serviceSets){
@@ -248,6 +258,168 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                 type: 'line'
             }
         );
+        lastRefreshElement = $("#last-refresh-time");
+        setupChannelSelector();
+        setupAutomaticUpdateBox();
+        populateLatestData();
+    });
+}
+
+
+function wifiologyNodeChartSetup(nodeID, baseApiUrl){
+    var lastMeasurementData = null;
+    var currentChannel = null;
+
+    var latestDataChart = null;
+    var lastRefreshElement = null;
+    var dataCounterCheckboxes = null;
+    var selectedCounters = null;
+    var datasets = null;
+    var i = null;
+    var colorWheel = [
+        "red", "orange", "yellow", "magenta", "violet",
+        "blue", "cyan", "green"
+    ];
+
+    function framesPerSecond(dataCounterName){
+        function applicator(datum){
+            console.log(datum.measurement.dataCounters);
+            return parseInt(datum.measurement.dataCounters[dataCounterName])/datum.measurement.measurementDuration;
+        }
+        return applicator;
+    }
+
+    function generateTimestamp(datum){
+        let startTime = new Date(datum.measurement.measurementStartTime);
+        return startTime.toLocaleTimeString();
+    }
+
+    function uniqueStationCounter(datum){
+        return datum.stations.length;
+    }
+
+    function cleanupCharts(){
+        latestDataChart.destroy();
+    }
+
+    function getSelectedCheckboxValues(){
+        selectedCounters = [];
+        dataCounterCheckboxes.find("input").each(
+            function(){
+                if(this.checked){
+                    selectedCounters.push($(this).val())
+                }
+            }
+        );
+        console.log(selectedCounters);
+        return selectedCounters;
+    }
+
+    function generateDatasets(counters){
+        datasets = [];
+        i = 0;
+        for(counter of counters){
+            datasets.push({
+                label: counter + ' per second',
+                data: lastMeasurementData.map(framesPerSecond(counter)),
+                fill: false
+            });
+            i++;
+        }
+        return datasets;
+    }
+
+    function updateChart(channel){
+        cleanupCharts();
+        selectedCounters = getSelectedCheckboxValues();
+        datasets = generateDatasets(selectedCounters);
+
+        latestDataChart = new Chart(
+            $("#node-recent-frame-counts-graph"),
+            {
+                type: 'line',
+                data: {
+                    labels: lastMeasurementData.map(generateTimestamp),
+                    datasets: datasets
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Latest  Data' + (channel ? ' (Channel ' + channel + ')' : '')
+                    },
+                    plugins: {
+                        colorschemes: {
+                            scheme: 'brewer.Paired12'
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    function populateLatestData(channel=null){
+        var measurementsAPI = baseApiUrl + "/nodes/" + nodeID + "/measurements";
+        var queryParams = {};
+        if(channel){
+            queryParams.channel = channel;
+        }
+
+        $.getJSON(
+            measurementsAPI,
+            queryParams,
+            function(data){
+                data.reverse();
+                lastMeasurementData = data;
+                updateChart(channel);
+
+                lastRefreshElement.text(" (Last Refresh Time: " + new Date().toLocaleTimeString() + ") ");
+
+            }
+        )
+    }
+
+    function setupChannelSelector(){
+        var channelSelector = $("#channel-selector");
+        channelSelector.change(
+            function(){
+                var channel = parseInt(channelSelector.val()) || null;
+                currentChannel = channel;
+                populateLatestData(channel);
+            }
+        );
+    }
+
+    function setupAutomaticUpdateBox(){
+        var automaticUpdateSelector = $("#automatic-update");
+        var timedEvent = null;
+
+        automaticUpdateSelector.click(function(){
+            if(timedEvent){
+                clearTimeout(timedEvent);
+            }
+            if(automaticUpdateSelector.clicked){
+                timedEvent = setTimeout(function(){
+                    populateLatestData(currentChannel);
+
+                }, 30000);
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        latestDataChart = new Chart(
+            $("#node-recent-frame-counts-graph"),
+            {
+                type: 'line'
+            }
+        );
+        dataCounterCheckboxes = $("#data-counters-selectors");
+
+        $("#data-counters-selectors input").on("click", function(){
+           updateChart(currentChannel)
+        });
+
         lastRefreshElement = $("#last-refresh-time");
         setupChannelSelector();
         setupAutomaticUpdateBox();

@@ -217,6 +217,13 @@ async function getWifiologyMeasurementByNodeIDChannelAndStartTime(client, nodeID
     )
 }
 
+async function getWifiologyMeasurementDuplicate(client, newMeasurementData, nodeID){
+    let newMeasurement = measurementFromAPI(newMeasurementData, nodeID);
+    return await wifiologyMeasurementQueries.selectWifiologyMeasurementByUniqueAttributes(
+        client, newMeasurement
+    );
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -228,5 +235,6 @@ module.exports = {
     getMeasurementDataSetsByNodeIDAndChannel,
     measurementDataSetToApiResponse,
     cleanUpOldWifiologyMeasurements,
-    getWifiologyMeasurementByNodeIDChannelAndStartTime
+    getWifiologyMeasurementByNodeIDChannelAndStartTime,
+    getWifiologyMeasurementDuplicate
 };

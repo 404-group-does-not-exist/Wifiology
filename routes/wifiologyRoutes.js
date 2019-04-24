@@ -138,7 +138,37 @@ function routesConstructor(app, passport, dbPool){
                 'pages/node',
                 await templateObjectGenerator(
                     req, res,
-                    {title: "Nodes", node, scriptToRun: `wifiologyNodeSetup(${nodeID}, '/api/internal')`}
+                    {
+                        title: `Node ${node.nodeID}`,
+                        node,
+                        scriptToRun: `wifiologyNodeSetup(${nodeID}, '/api/internal')`
+                    }
+                )
+            );
+        }
+        finally{
+            await release(client);
+        }
+    }
+
+    async function nodeChartGetHandler(req, res){
+        let nodeID = parseInt(req.params.nodeID);
+        let client = await spawnClientFromPool(dbPool, false);
+        try {
+            let node = await wifiologyNodesData.getWifiologyNodeByID(client, nodeID);
+            if(!node){
+                req.flash("error", `Invalid Node ID: ${nodeID}`);
+                res.redirect("/");
+            }
+            res.render(
+                'pages/nodeChart',
+                await templateObjectGenerator(
+                    req, res,
+                    {
+                        title: `Node ${node.nodeID} Chart`,
+                        node,
+                        scriptToRun: `wifiologyNodeChartSetup(${nodeID}, '/api/internal')`
+                    }
                 )
             );
         }
@@ -202,6 +232,7 @@ function routesConstructor(app, passport, dbPool){
     app.get('/users/:userID', authenticatedAsyncHandler(userGetHandler));
     app.get('/nodes', authenticatedAsyncHandler(nodesGetHandler));
     app.get('/nodes/:nodeID', authenticatedAsyncHandler(nodeGetHandler));
+    app.get('/nodes/:nodeID/chart', authenticatedAsyncHandler(nodeChartGetHandler));
     app.get('/api/internal/nodes/:nodeID/measurements', authenticatedAsyncHandler(secretNodeMeasurementsAPI));
 
     app.post('/login',

@@ -91,6 +91,21 @@ async function selectAggregateDataCountersForWifiologyMeasurements(client, measu
     }, dataCounters);
 }
 
+async function selectWifiologyMeasurementByUniqueAttributes(client, newMeasurementData){
+    let result = await client.query(
+        "SELECT * FROM measurement " +
+        "WHERE measurementNodeID = $measurementNodeID " +
+        "AND channel = $channel " +
+        "AND measurementStartTime = $measurementStartTime ",
+        newMeasurementData.toRow()
+    );
+    if(result.rows.length > 0){
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 async function deleteNodeOldWifiologyMeasurements(client, nodeID, thresholdAgeDays){
     let result = await client.query(
         `DELETE FROM measurement 
@@ -112,5 +127,6 @@ module.exports = {
     selectAllWifiologyMeasurementsForNodeAndChannel,
     selectAggregateDataCountersForWifiologyMeasurements,
     deleteNodeOldWifiologyMeasurements,
-    selectWifiologyMeasurementByNodeIDChannelAndStartTime
+    selectWifiologyMeasurementByNodeIDChannelAndStartTime,
+    selectWifiologyMeasurementByUniqueAttributes
 };
