@@ -86,7 +86,7 @@ async function selectAggregateWifiologyServiceSetAssociatedMacAddresses(client, 
         `,
         {measurementID, serviceSetIDs}
     );
-    return result.reduce((acc, row) => {
+    return result.rows.reduce((acc, row) => {
         if(row.associatedservicesetid in acc){
             acc[row.associatedservicesetid].push(row.macaddress);
         } else {
@@ -106,7 +106,7 @@ async function selectAggregateWifiologyServiceSetInfraMacAddresses(client, measu
         `,
         {measurementID, serviceSetIDs}
     );
-    return result.reduce((acc, row) => {
+    return result.rows.reduce((acc, row) => {
         if(row.mapservicesetid in acc){
             acc[row.mapservicesetid].push(row.macaddress);
         } else {

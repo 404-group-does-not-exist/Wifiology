@@ -118,7 +118,7 @@ describe('WifiologyMeasurementData', function(){
         }
     });
 
-    it('should allow the developer to add a new measurement successfully', async function(){
+    it('should allow the developer to add and retrieve a new measurement successfully', async function(){
 
         let dbClient = await spawnClient(DATABASE_URL);
 
@@ -163,6 +163,10 @@ describe('WifiologyMeasurementData', function(){
                 expect(serviceSet).to.be.eql(await wifiologyServiceSetData.getServiceSetByID(dbClient, serviceSet.serviceSetID));
                 expect(serviceSet).to.be.eql(await wifiologyServiceSetData.getServiceSetByBssid(dbClient, serviceSet.bssid));
             }
+
+            let retrieved = await wifiologyMeasurementData.getMeasurementDataSetsByNodeID(dbClient, testData.testNode.nodeID);
+            expect(retrieved).to.be.length(1);
+            expect(retrieved[0]).to.have.keys('measurement', 'stations', 'serviceSets');
         }
         finally {
             await dbClient.end();
