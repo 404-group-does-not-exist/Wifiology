@@ -92,7 +92,6 @@ async function selectAggregateWifiologyServiceSetAssociatedMacAddresses(client, 
         } else {
             acc[row.associatedservicesetid] = [row.macaddress];
         }
-        acc[row.associatedservicesetid] = row.featureflagvalue;
         return acc;
     }, {});
 }
