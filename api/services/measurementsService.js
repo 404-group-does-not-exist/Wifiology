@@ -31,7 +31,7 @@ function nodesServiceConstructor(dbPool){
                 let candidateMeasurement = measurementFromAPI(newMeasurementData, nodeID);
                 let finalResult;
 
-                let existingMeasurement = await getWifiologyMeasurementByNodeIDChannelAndStartTime(
+                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementByNodeIDChannelAndStartTime(
                     client, nodeID, candidateMeasurement.channel, candidateMeasurement.startTime
                 );
                 if(existingMeasurement){
