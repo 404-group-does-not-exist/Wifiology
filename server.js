@@ -35,15 +35,21 @@ if(process.env.AUTOMIGRATE){
 } else {
     AUTOMIGRATE = true;
 }
+let DATABASE_USE_SSL;
+if(process.env.DATABASE_USE_SSL){
+    DATABASE_USE_SSL = process.env.DATABASE_USE_SSL === 'true'
+} else {
+    DATABASE_USE_SSL = true;
+}
 
 
-function createApplication(databaseUrl, autoMigrate){
+function createApplication(databaseUrl, autoMigrate, useSSL){
     let application = express();
     if(autoMigrate){
         doMigrationUpSync(databaseUrl);
     }
 
-    let pool = createPostgresPool(databaseUrl, true);
+    let pool = createPostgresPool(databaseUrl, useSSL);
     let featureFlags = new FeatureFlags(pool);
 
     application.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
@@ -134,7 +140,7 @@ if (require.main === module) {
         timestamp: true
     }));
 
-    application = createApplication(DATABASE_URL, AUTOMIGRATE)
+    application = createApplication(DATABASE_URL, AUTOMIGRATE, DATABASE_USE_SSL)
         .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 }
 

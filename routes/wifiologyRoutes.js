@@ -2,6 +2,7 @@ const wifiologyNodesData = require("../db/data/wifiologyNode");
 const {
     getMeasurementDataSetsByNodeID, getMeasurementDataSetsByNodeIDAndChannel, measurementDataSetToApiResponse
 } = require('../db/data/wifiologyMeasurement');
+const { getAllUsers, getUserByID } = require('../db/data/wifiologyUser');
 const { version } = require("../info");
 const { spawnClientFromPool, commit, release } = require("../db/core");
 
@@ -71,6 +72,30 @@ function routesConstructor(app, passport, dbPool){
         } else {
             res.redirect('/');
         }
+    }
+
+    async function usersGetHandler(req, res){
+        let client = await spawnClientFromPool(dbPool, false);
+        try{
+            let users = await getAllUsers(client, 1000,0);
+            res.render('pages/users', {users: users});
+        }
+        finally {
+            client.release();
+        }
+
+    }
+
+    async function userGetHandler(req, res){
+        let client = await spawnClientFromPool(dbPool, false);
+        try{
+            let user = await getUserByID(client, parseInt(req.params.userID));
+            res.render('pages/user', {user: user});
+        }
+        finally {
+            client.release();
+        }
+
     }
 
     async function nodesGetHandler(req, res){
@@ -163,7 +188,8 @@ function routesConstructor(app, passport, dbPool){
     app.get('/login', asyncHandler(loginGetHandler));
     app.get('/logout', authenticatedAsyncHandler(logoutGetHandler));
     app.get('/register', asyncHandler(registrationGetHandler));
-
+    app.get('/users', usersGetHandler);
+    app.get('/users/:userID', userGetHandler);
     app.get('/nodes', authenticatedAsyncHandler(nodesGetHandler));
     app.get('/nodes/:nodeID', authenticatedAsyncHandler(nodeGetHandler));
     app.get('/api/internal/nodes/:nodeID/measurements', authenticatedAsyncHandler(secretNodeMeasurementsAPI));

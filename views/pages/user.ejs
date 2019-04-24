@@ -1,0 +1,9 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<ul>
+    <li>Username: <%= user.userName %> </li>
+    <li>Email address: <%= user.emailAddress %> </li>
+    <li>Description: <%= user.userData.description || "N/A" %> </li>
+</ul>
+
+<% include ../partials/footer-new.ejs %>
