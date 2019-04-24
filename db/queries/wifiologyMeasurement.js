@@ -61,6 +61,19 @@ async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, c
     return result.rows.map(r => fromRow(r));
 }
 
+async function selectWifiologyMeasurementByNodeIDChannelAndStartTime(client, nodeID, channel, startTime){
+    let result = await client.query(
+        "SELECT * FROM measurement " +
+        "WHERE measurementNodeID = $nodeID AND channel = $channel AND measurementStartTime = $startTime",
+        {nodeID, channel, startTime}
+    );
+    if(result.rows.length > 0){
+        return fromRow(result.rows[0]);
+    } else {
+        return null;
+    }
+}
+
 async function selectAggregateDataCountersForWifiologyMeasurements(client, measurementIDs){
     let result = await client.query(
         "SELECT * FROM dataCountersForMeasurements($array)",
@@ -98,5 +111,6 @@ module.exports = {
     selectAllWifiologyMeasurementsForNode,
     selectAllWifiologyMeasurementsForNodeAndChannel,
     selectAggregateDataCountersForWifiologyMeasurements,
-    deleteNodeOldWifiologyMeasurements
+    deleteNodeOldWifiologyMeasurements,
+    selectWifiologyMeasurementByNodeIDChannelAndStartTime
 };

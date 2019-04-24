@@ -19,7 +19,7 @@ function measurements(measurementsService){
         let response = await measurementsService.createNewMeasurementAPI(
             newMeasurementData, req.params.nodeID, req.user.userID
         );
-        res.status(200).json(response);
+        res.status(response.statusCode).json(response.result);
     }
 
     // NOTE: We could also use a YAML string here.
@@ -78,6 +78,19 @@ function measurements(measurementsService){
                     type: 'array',
                     items: {
                         $ref: '#/definitions/WifiologyMeasurementDataSet'
+                    }
+                }
+            },
+            303: {
+                description: 'A matching measurement has been found in the database; the uploaded measurement will not be recorded.',
+                schema: {
+                    type: 'object',
+                    properties: {
+                        warning: { type: 'string' },
+                        measurement: {
+                            $ref: '#/definitions/WifiologyMeasurement',
+                            description: 'The existing matching measurement.'
+                        }
                     }
                 }
             },

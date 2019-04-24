@@ -199,6 +199,12 @@ async function cleanUpOldWifiologyMeasurements(client, maximumAgeDays){
     }
 }
 
+async function getWifiologyMeasurementByNodeIDChannelAndStartTime(client, nodeID, channel, startTime){
+    return await wifiologyMeasurementQueries.selectWifiologyMeasurementByNodeIDChannelAndStartTime(
+        client, nodeID, channel, startTime
+    )
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -209,5 +215,6 @@ module.exports = {
     getMeasurementDataSetsByNodeID,
     getMeasurementDataSetsByNodeIDAndChannel,
     measurementDataSetToApiResponse,
-    cleanUpOldWifiologyMeasurements
+    cleanUpOldWifiologyMeasurements,
+    getWifiologyMeasurementByNodeIDChannelAndStartTime
 };

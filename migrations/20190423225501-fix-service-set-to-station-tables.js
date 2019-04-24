@@ -18,7 +18,7 @@ exports.up = function(db) {
   return db.runSql(
       `
       CREATE INDEX IF NOT EXISTS measurement_node_startTime_IDX ON measurement(measurementNodeID, measurementStartTime);
-      CREATE UNIQUE INDEX IF NOT EXISTS measurment_node_channel_startTime_UNIQUE_IDX ON measurement(measurementNodeID, channel, measurementStartTime);
+      CREATE UNIQUE INDEX IF NOT EXISTS measurement_node_channel_startTime_UNIQUE_IDX ON measurement(measurementNodeID, channel, measurementStartTime);
     
       ALTER TABLE infrastructureStationServiceSetMap RENAME TO infrastructureStationServiceSetMapOld;
       ALTER TABLE associationStationServiceSetMap RENAME TO associationStationServiceSetMapOld;
@@ -75,7 +75,7 @@ exports.down = function(db) {
       `
       DROP INDEX IF EXISTS measurementStationMap_measurement_IDX;
       DROP INDEX IF EXISTS measurement_node_startTime_IDX;
-      DROP INDEX IF EXISTS measurment_node_channel_startTime_UNIQUE_IDX;
+      DROP INDEX IF EXISTS measurement_node_channel_startTime_UNIQUE_IDX;
       
       ALTER TABLE infrastructureStationServiceSetMap RENAME TO infrastructureStationServiceSetMapFuture;
       ALTER TABLE associationStationServiceSetMap RENAME TO associationStationServiceSetMapFuture;

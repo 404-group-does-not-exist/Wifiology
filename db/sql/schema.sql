@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS measurement(
     extraData JSONB NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS measurement_node_startTime_IDX ON measurement(measurementNodeID, measurementStartTime);
-CREATE UNIQUE INDEX IF NOT EXISTS measurment_node_channel_startTime_UNIQUE_IDX ON measurement(measurementNodeID, channel, measurementStartTime);
+CREATE UNIQUE INDEX IF NOT EXISTS measurement_node_channel_startTime_UNIQUE_IDX ON measurement(measurementNodeID, channel, measurementStartTime);
 CREATE INDEX IF NOT EXISTS measurement_channel_startTime_IDX ON measurement(channel, measurementStartTime);
 
 
