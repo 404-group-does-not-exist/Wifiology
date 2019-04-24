@@ -74,7 +74,7 @@ function routesConstructor(app, passport, dbPool){
     }
 
     async function nodesGetHandler(req, res){
-        let client = await spawnClientFromPool(dbPool);
+        let client = await spawnClientFromPool(dbPool, false);
         try{
             let userNodes = await wifiologyNodesData.getWifiologyNodesByOwnerID(client, req.user.userID);
             let publicNodes = await wifiologyNodesData.getAllPublicWifiologyNodes(client, 100, 0);
@@ -83,7 +83,7 @@ function routesConstructor(app, passport, dbPool){
                 await templateObjectGenerator(
                     req, res,{title: "Nodes", userNodes, publicNodes, scriptToRun: 'wifiologyNodesSetup()'}
                 )
-            )
+            );
         }
         finally{
             await release(client);
@@ -92,7 +92,7 @@ function routesConstructor(app, passport, dbPool){
 
     async function nodeGetHandler(req, res){
         let nodeID = parseInt(req.params.nodeID);
-        let client = await spawnClientFromPool(dbPool);
+        let client = await spawnClientFromPool(dbPool, false);
         try {
             let node = await wifiologyNodesData.getWifiologyNodeByID(client, nodeID);
             if(!node){
@@ -105,7 +105,7 @@ function routesConstructor(app, passport, dbPool){
                     req, res,
                     {title: "Nodes", node, scriptToRun: `wifiologyNodeSetup(${nodeID}, '/api/internal')`}
                 )
-            )
+            );
         }
         finally{
             await release(client);
@@ -132,7 +132,7 @@ function routesConstructor(app, passport, dbPool){
             channel = null;
         }
 
-        let client = await spawnClientFromPool(dbPool);
+        let client = await spawnClientFromPool(dbPool, false);
         try {
             res.setHeader('Content-Type', 'application/json');
             let node = await wifiologyNodesData.getWifiologyNodeByID(client, nodeID);

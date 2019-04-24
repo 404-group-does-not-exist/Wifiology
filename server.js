@@ -37,13 +37,13 @@ if(process.env.AUTOMIGRATE){
 }
 
 
-function createApplication(pg_conn_str, automigrate){
+function createApplication(databaseUrl, autoMigrate){
     let application = express();
-    if(automigrate){
-        doMigrationUpSync(pg_conn_str);
+    if(autoMigrate){
+        doMigrationUpSync(databaseUrl);
     }
 
-    let pool = createPostgresPool(pg_conn_str, true);
+    let pool = createPostgresPool(databaseUrl, true);
     let featureFlags = new FeatureFlags(pool);
 
     application.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
@@ -130,7 +130,8 @@ function createApplication(pg_conn_str, automigrate){
 
 if (require.main === module) {
     winston.add(new winston.transports.Console({
-        format: winston.format.simple()
+        format: winston.format.simple(),
+        timestamp: true
     }));
 
     application = createApplication(DATABASE_URL, AUTOMIGRATE)

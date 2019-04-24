@@ -194,24 +194,24 @@ CREATE AGGREGATE weightedStdDev(stdDev REAL, weight REAL)(
 
 CREATE OR REPLACE FUNCTION dataCountersForMeasurements(measurementIDs BIGINT[])
   RETURNS TABLE (
-        measurementID BIGINT,
-        managementFrameCount BIGINT,
-        associationFrameCount BIGINT,
-        reassociationFrameCount BIGINT,
-        disassociationFrameCount BIGINT,
-        controlFrameCount BIGINT,
-        rtsFrameCount BIGINT,
-        ctsFrameCount BIGINT,
-        ackFrameCount BIGINT,
-        dataFrameCount BIGINT,
-        dataThroughputIn BIGINT,
-        dataThroughputOut BIGINT,
-        retryCount BIGINT,
-        averagePower REAL,
-        stdDevPower REAL,
-        lowestRate INTEGER,
-        higestRate INTEGER,
-        failedFCSCount BIGINT
+    measurementID BIGINT,
+    managementFrameCount BIGINT,
+    associationFrameCount BIGINT,
+    reassociationFrameCount BIGINT,
+    disassociationFrameCount BIGINT,
+    controlFrameCount BIGINT,
+    rtsFrameCount BIGINT,
+    ctsFrameCount BIGINT,
+    ackFrameCount BIGINT,
+    dataFrameCount BIGINT,
+    dataThroughputIn BIGINT,
+    dataThroughputOut BIGINT,
+    retryCount BIGINT,
+    averagePower REAL,
+    stdDevPower REAL,
+    lowestRate INTEGER,
+    higestRate INTEGER,
+    failedFCSCount BIGINT
   )
 AS
 $body$

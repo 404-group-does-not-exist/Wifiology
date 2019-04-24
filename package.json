@@ -10,6 +10,7 @@
     "start": "node server.js",
     "test": "mocha --recursive test/*",
     "migrate": "db-migrate",
+    "janitor": "node janitor.js",
     "pm2": "pm2",
     "pm2_start": "pm2 start server.js"
   },

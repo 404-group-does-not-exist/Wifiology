@@ -1,5 +1,5 @@
 const { getUserByUserName, getUserByID, getUserByEmailAddress, createNewUser } = require('../db/data/wifiologyUser');
-const { spawnClientFromPool, release, commit } = require('../db/core');
+const { spawnClientFromPool, release, commit, rollback } = require('../db/core');
 const LocalStrategy = require('passport-local').Strategy;
 
 
@@ -9,7 +9,7 @@ function authSetup(passport, dbPool, featureFlags){
     });
 
     passport.deserializeUser(async function(userID, done){
-        let client = await spawnClientFromPool(dbPool);
+        let client = await spawnClientFromPool(dbPool, false);
         try{
             let user = await getUserByID(client, userID);
             if(!user){
@@ -32,7 +32,7 @@ function authSetup(passport, dbPool, featureFlags){
     });
 
     async function handleAuth(username, password, done){
-        let client = await spawnClientFromPool(dbPool);
+        let client = await spawnClientFromPool(dbPool, false);
         try{
             let user = await getUserByUserName(client, username);
             if(!user){
@@ -88,12 +88,13 @@ function authSetup(passport, dbPool, featureFlags){
                 let user = await createNewUser(
                     client, emailAddress, username, password, userData, false, isActive
                 );
-                commit(client);
+                await commit(client);
                 return done(null, user);
             }
 
         }
         catch(e){
+            await rollback(client);
             return done(e);
         }
         finally {

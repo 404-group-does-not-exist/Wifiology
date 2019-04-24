@@ -51,7 +51,7 @@ async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, c
     let queryString = "SELECT * FROM measurement WHERE measurementNodeID = $nodeID AND channel = $channel ";
     params = {nodeID, limit, channel};
     if(typeof priorLastMeasurementID !== 'undefined' && priorLastMeasurementID !== null) {
-        queryString += " AND measurementID < $measurmentID ";
+        queryString += " AND measurementID < $measurementID ";
         params.measurementID = priorLastMeasurementID;
     }
     queryString += " ORDER BY measurementID DESC LIMIT $limit ";
@@ -78,10 +78,25 @@ async function selectAggregateDataCountersForWifiologyMeasurements(client, measu
     }, dataCounters);
 }
 
+async function deleteNodeOldWifiologyMeasurements(client, nodeID, thresholdAgeDays){
+    let result = await client.query(
+        `DELETE FROM measurement 
+         WHERE measurementNodeID = $nodeID 
+         AND measurementStartTime < 
+           SELECT MAX(measurementStartTime) FROM measurement WHERE measurementNodeID=$nodeID
+         ) - make_interval(days := $thresholdAgeDays)
+         RETURNING measurementID
+        `,
+        {nodeID, thresholdAgeDays}
+    );
+    return result.rows.map(r => r.measurementid);
+}
+
 module.exports = {
     insertWifiologyMeasurement,
     selectWifiologyMeasurementByID,
     selectAllWifiologyMeasurementsForNode,
     selectAllWifiologyMeasurementsForNodeAndChannel,
-    selectAggregateDataCountersForWifiologyMeasurements
+    selectAggregateDataCountersForWifiologyMeasurements,
+    deleteNodeOldWifiologyMeasurements
 };

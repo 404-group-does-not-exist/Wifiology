@@ -191,6 +191,14 @@ function measurementDataSetToApiResponse(mds){
     }
 }
 
+async function cleanUpOldWifiologyMeasurements(client, maximumAgeDays){
+    for(let node of await wifiologyNodeQueries.selectAllWifiologyNodes(client, 9999, 0)){
+        await wifiologyMeasurementQueries.deleteNodeOldWifiologyMeasurements(
+            client, node.nodeID, maximumAgeDays
+        );
+    }
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -200,5 +208,6 @@ module.exports = {
     getAggregateDataCountersForMeasurementIDs,
     getMeasurementDataSetsByNodeID,
     getMeasurementDataSetsByNodeIDAndChannel,
-    measurementDataSetToApiResponse
+    measurementDataSetToApiResponse,
+    cleanUpOldWifiologyMeasurements
 };
