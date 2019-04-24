@@ -1,9 +1,17 @@
 <% include ../partials/header-new.ejs %>
 <% include ../partials/navbar.ejs %>
-<ul>
-    <li>Username: <%= user.userName %> </li>
-    <li>Email address: <%= user.emailAddress %> </li>
-    <li>Description: <%= user.userData.description || "N/A" %> </li>
-</ul>
-
+<div class="container">
+    <div class="row">
+        <% include ../partials/alerts.ejs %>
+    </div>
+    <div class="row">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Username:</b> <%= targetUser.userName %> </li>
+            <li class="list-group-item"><b>Email address:</b> <%= targetUser.emailAddress %> </li>
+            <li class="list-group-item"><b>Is Admin</b> <%= targetUser.isAdmin %></li>
+            <li class="list-group-item"><b>Is Active</b> <%= targetUser.isActive %></li>
+            <li class="list-group-item"><b>Description:</b> <%= targetUser.userData.description || "N/A" %> </li>
+        </ul>
+    </div>
+</div>
 <% include ../partials/footer-new.ejs %>

@@ -78,7 +78,12 @@ function routesConstructor(app, passport, dbPool){
         let client = await spawnClientFromPool(dbPool, false);
         try{
             let users = await getAllUsers(client, 1000,0);
-            res.render('pages/users', {users: users});
+            res.render(
+                'pages/users',
+                await templateObjectGenerator(
+                    req, res, {title: `Wifiology Users`, users}
+                )
+            );
         }
         finally {
             client.release();
@@ -90,7 +95,12 @@ function routesConstructor(app, passport, dbPool){
         let client = await spawnClientFromPool(dbPool, false);
         try{
             let user = await getUserByID(client, parseInt(req.params.userID));
-            res.render('pages/user', {user: user});
+            res.render(
+                'pages/user',
+                await templateObjectGenerator(
+                    req, res, {title: `Wifiology User -- ${user.userName}`, targetUser: user}
+                )
+            );
         }
         finally {
             client.release();
@@ -188,8 +198,8 @@ function routesConstructor(app, passport, dbPool){
     app.get('/login', asyncHandler(loginGetHandler));
     app.get('/logout', authenticatedAsyncHandler(logoutGetHandler));
     app.get('/register', asyncHandler(registrationGetHandler));
-    app.get('/users', usersGetHandler);
-    app.get('/users/:userID', userGetHandler);
+    app.get('/users', authenticatedAsyncHandler(usersGetHandler));
+    app.get('/users/:userID', authenticatedAsyncHandler(userGetHandler));
     app.get('/nodes', authenticatedAsyncHandler(nodesGetHandler));
     app.get('/nodes/:nodeID', authenticatedAsyncHandler(nodeGetHandler));
     app.get('/api/internal/nodes/:nodeID/measurements', authenticatedAsyncHandler(secretNodeMeasurementsAPI));

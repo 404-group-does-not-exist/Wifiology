@@ -43,22 +43,50 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
     function populateServiceSets(data, channel){
         $("#channel-info").text(channel ? " (Channel " + channel + ") " : " (All Channels) ");
         var serviceSets = {};
-        var tableBody = $("#service-sets-table tbody");
+        var list = $("#service-sets-list-group");
+        var networkName;
+        var bssid;
+        var id;
 
-
-        tableBody.empty();
+        list.empty();
         console.log(data);
 
         for(var i = 0; i < data.length; i++){
             for(var j = 0; j < data[i].serviceSets.length; j++){
+                networkName = data[i].serviceSets[j].networkName;
+                bssid = data[i].serviceSets[j].bssid;
+                if(serviceSets.hasOwnProperty(networkName)){
+                    if(!serviceSets[networkName].include(bssid)){
+                        serviceSets[networkName].push(bssid);
+                    }
+                } else {
+                    serviceSets[networkName] = {
+                        bssids: [bssid]
+                    }
+                }
                 serviceSets[data[i].serviceSets[j].bssid] = data[i].serviceSets[j];
             }
         }
-        for(var bssid in serviceSets){
+        for(networkName in serviceSets){
+           id = "serviceSetList-" + networkName;
+           list.append(
+               '<li class="list-group-item px-0">\n' +
+               '<a class="btn" data-toggle="collapse" href="#' + id + '" role="button" aria-expanded="true" aria-controls="collapseExample1">\n' +
+               '   <span class="mr-3"></span>' + networkName + '\n' +
+               '</a>\n' +
+               '<div class="collapse" id="' + id + '">\n' +
+               '    <div class="card card-body mt-2">\n' +
+               '    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.\n' +
+               '    </div>\n' +
+               '</div>' +
+               '</li>'
+           );
+        }
+        /*for(var bssid in serviceSets){
             tableBody.append(
                 "<tr><td>" +  bssid + "</td><td>" + serviceSets[bssid].networkName + "</td></tr>"
             )
-        }
+        }*/
     }
 
 
