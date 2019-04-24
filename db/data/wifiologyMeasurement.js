@@ -134,7 +134,19 @@ function measurementDataSetConstructor(client){
         let serviceSets = await wifiologyServiceSetQueries.selectWifiologyServiceSetsByMeasurementID(
             client, measurement.measurementID
         );
-        await Promise.all(
+        let serviceSetIDs = serviceSets.map(ss => ss.serviceSetID);
+        let infraMacAddressMap = await wifiologyLinkingTableQueries.selectAggregateWifiologyServiceSetInfraMacAddresses(
+            client, measurement.measurementID, serviceSetIDs
+        );
+        let associatedMacAddressMap = await wifiologyLinkingTableQueries.selectAggregateWifiologyServiceSetAssociatedMacAddresses(
+            client, measurement.measurementID, serviceSetIDs
+        );
+        for(let serviceSet of serviceSets){
+            serviceSet.infraMacAddresses = infraMacAddressMap[serviceSet.serviceSetID] || [];
+            serviceSet.associatedMacAddresses = associatedMacAddressMap[serviceSet.serviceSetID] || [];
+        }
+
+        /*await Promise.all(
             serviceSets.map(
                 async ss => {
                     ss.infraMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetInfraMacAddresses(
@@ -146,7 +158,7 @@ function measurementDataSetConstructor(client){
                     return ss;
                 }
             )
-        );
+        );*/
         return {
             measurement: measurement,
             stations: stations,

@@ -77,11 +77,52 @@ async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID,
     return result.rows;
 }
 
+async function selectAggregateWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetIDs){
+    let result = await client.query(
+        `SELECT s.macAddress, a.associatedServiceSetID
+         FROM station AS s 
+         JOIN associationStationServiceSetMap AS a ON s.stationid = a.associatedstationid
+         WHERE a.associatedServiceSetID = ANY($serviceSetIDs) AND a.measurementID = $measurementID
+        `,
+        {measurementID, serviceSetIDs}
+    );
+    return result.reduce((acc, row) => {
+        if(row.associatedservicesetid in acc){
+            acc[row.associatedservicesetid].push(row.macaddress);
+        } else {
+            acc[row.associatedservicesetid] = [row.macaddress];
+        }
+        acc[row.associatedservicesetid] = row.featureflagvalue;
+        return acc;
+    }, {});
+}
+
+async function selectAggregateWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetIDs){
+    let result = await client.query(
+        `SELECT s.macAddress, i.mapServiceSetID
+         FROM station AS s
+         JOIN infrastructureStationServiceSetMap AS i ON s.stationid = i.mapstationid
+         WHERE i.mapServiceSetID = ANY($serviceSetIDs) AND i.measurementID = $measurementID
+        `,
+        {measurementID, serviceSetIDs}
+    );
+    return result.reduce((acc, row) => {
+        if(row.mapservicesetid in acc){
+            acc[row.mapservicesetid].push(row.macaddress);
+        } else {
+            acc[row.mapservicesetid] = [row.macaddress];
+        }
+        return acc;
+    }, {});
+}
+
 module.exports = {
     insertMeasurementStationLink,
     insertServiceSetAssociatedStation,
     insertServiceSetInfraStation,
     updateServiceSetNetworkNameIfNeeded,
     selectWifiologyServiceSetAssociatedMacAddresses,
-    selectWifiologyServiceSetInfraMacAddresses
+    selectWifiologyServiceSetInfraMacAddresses,
+    selectAggregateWifiologyServiceSetAssociatedMacAddresses,
+    selectAggregateWifiologyServiceSetInfraMacAddresses
 };

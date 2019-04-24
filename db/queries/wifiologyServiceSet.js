@@ -42,7 +42,7 @@ async function selectWifiologyServiceSetByServiceSetID(client, serviceSetID) {
 
 async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) {
     let result = await client.query(
-        `SELECT ss.*
+        `SELECT DISTINCT ss.*
          FROM serviceSet AS ss
          LEFT JOIN associationStationServiceSetMap AS a ON ss.serviceSetID = a.associatedServiceSetID
          LEFT JOIN infrastructureStationServiceSetMap AS i ON ss.serviceSetID = i.mapServiceSetID
