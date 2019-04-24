@@ -50,17 +50,14 @@ async function lookupOrLoadNewServiceSet(client, rawNewServiceSet){
 
 function loadServiceSetAdditionalInfoConstructor(client, rawServiceSet, measurementID){
     async function execute(serviceSet){
-        await wifiologyLinkingTableQueries.insertMeasurementServiceSet(
-            client, measurementID, serviceSet.serviceSetID
-        );
         await Promise.all(rawServiceSet.associatedMacAddresses.map(
             macAddress => wifiologyLinkingTableQueries.insertServiceSetAssociatedStation(
-                client, serviceSet.serviceSetID, macAddress
+                client, measurementID, serviceSet.serviceSetID, macAddress
             )
         ));
         await Promise.all(rawServiceSet.infrastructureMacAddresses.map(
             macAddress => wifiologyLinkingTableQueries.insertServiceSetInfraStation(
-                client, serviceSet.serviceSetID, macAddress
+                client, measurementID, serviceSet.serviceSetID, macAddress
             )
         ));
         return serviceSet;
@@ -140,10 +137,10 @@ function measurementDataSetConstructor(client){
         await Promise.all(
             serviceSets.map(
                 async ss => {
-                    ss.infraMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetInfraMacAddresses(
+                    ss.infraMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetInfraMacAddresses(
                         client, measurement.measurementID, ss.serviceSetID
                     );
-                    ss.associatedMacAddresses = await wifiologyServiceSetQueries.selectWifiologyServiceSetAssociatedMacAddresses(
+                    ss.associatedMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetAssociatedMacAddresses(
                         client, measurement.measurementID, ss.serviceSetID
                     );
                     return ss;

@@ -62,30 +62,6 @@ async function selectAllWifiologyMeasurementsForNodeAndChannel(client, nodeID, c
 }
 
 async function selectAggregateDataCountersForWifiologyMeasurements(client, measurementIDs){
-    /*let queryString = `
-    SELECT
-        mapMeasurementID,
-        SUM(m.managementFrameCount) AS managementFrameCount,
-        SUM(m.associationFrameCount) AS associationFrameCount,
-        SUM(m.reassociationFrameCount) AS reassociationFrameCount,
-        SUM(m.disassociationFrameCount) AS disassociationFrameCount,
-        SUM(m.controlFrameCount) AS controlFrameCount,
-        SUM(m.rtsFrameCount) AS rtsFrameCount,
-        SUM(m.ctsFrameCount) AS ctsFrameCount,
-        SUM(m.ackFrameCount) AS ackFrameCount,
-        SUM(m.dataFrameCount) AS dataFrameCount,
-        SUM(m.dataThroughputIn) AS dataThroughputIn,
-        SUM(m.dataThroughputOut) AS dataThroughputOut,
-        SUM(m.retryFrameCount) AS retryFrameCount,
-        null AS averagePower, -- TODO: weighted average support
-        null AS stdDevPower, -- TODO: weighted variance support
-        MIN(m.lowestRate) AS lowestRate,
-        MAX(m.highestRate) AS highestRate,
-        SUM(m.failedFCSCount) AS failedFCSCount
-    FROM measurementstationmap AS m
-    GROUP BY m.mapmeasurementid
-    HAVING m.mapmeasurementid IN
-    ` + placeholderConstructor(measurementIDs);*/
     let result = await client.query(
         "SELECT * FROM dataCountersForMeasurements($array)",
         {array: measurementIDs}
