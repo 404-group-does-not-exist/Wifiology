@@ -47,7 +47,7 @@ async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) 
          WHERE EXISTS(
            SELECT 1 FROM associationStationServiceSetMap AS a
            WHERE  ss.serviceSetID = a.associatedServiceSetID AND a.measurementID = $measurementID
-           UNION ALLL
+           UNION ALL
            SELECT 1 FROM infrastructureStationServiceSetMap as i
            WHERE ss.serviceSetID = i.mapServiceSetID AND i.measurementID = $measurementID
            
