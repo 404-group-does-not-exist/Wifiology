@@ -44,9 +44,14 @@ async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) 
     let result = await client.query(
         `SELECT DISTINCT ss.*
          FROM serviceSet AS ss
-         LEFT JOIN associationStationServiceSetMap AS a ON ss.serviceSetID = a.associatedServiceSetID
-         LEFT JOIN infrastructureStationServiceSetMap AS i ON ss.serviceSetID = i.mapServiceSetID
-         WHERE a.measurementID = $measurementID OR i.measurementID = $measurementID
+         WHERE EXISTS(
+           SELECT 1 FROM associationStationServiceSetMap AS a
+           WHERE  ss.serviceSetID = a.associatedServiceSetID AND a.measurementID = $measurementID
+           UNION ALLL
+           SELECT 1 FROM infrastructureStationServiceSetMap as i
+           WHERE ss.serviceSetID = i.mapServiceSetID AND i.measurementID = $measurementID
+           
+         )  
         `,
         {measurementID}
     );
