@@ -276,15 +276,25 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
     var selectedCounters = null;
     var datasets = null;
     var i = null;
-    var colorWheel = [
-        "red", "orange", "yellow", "magenta", "violet",
-        "blue", "cyan", "green"
+    var currentData = null;
+    var currentLabel = null;
+
+    var dontDivideByDuration = [
+        'averagePower', 'stdDevPower', 'lowestRate', 'highestRate'
     ];
 
-    function framesPerSecond(dataCounterName){
+    function dataExtractorPerSecond(dataCounterName){
         function applicator(datum){
             console.log(datum.measurement.dataCounters);
             return parseInt(datum.measurement.dataCounters[dataCounterName])/datum.measurement.measurementDuration;
+        }
+        return applicator;
+    }
+
+    function dataExtractor(dataCounterName){
+        function applicator(datum){
+            console.log(datum.measurement.dataCounters);
+            return parseFloat(datum.measurement.dataCounters[dataCounterName]);
         }
         return applicator;
     }
@@ -319,9 +329,16 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
         datasets = [];
         i = 0;
         for(counter of counters){
+            if(dontDivideByDuration.includes(counter)){
+                currentData = lastMeasurementData.map(dataExtractor(counter));
+                currentLabel = counter;
+            } else {
+                currentData = lastMeasurementData.map(dataExtractorPerSecond(counter));
+                currentLabel = counter + ' per second'
+            }
             datasets.push({
-                label: counter + ' per second',
-                data: lastMeasurementData.map(framesPerSecond(counter)),
+                label: currentLabel,
+                data: currentData,
                 fill: false
             });
             i++;
