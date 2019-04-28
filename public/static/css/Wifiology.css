@@ -78,8 +78,44 @@
   text-decoration:none;
 }
 
-
-
 .list-button-link .fa:before {
   content: "\f13a";
+}
+
+
+
+.wifiology-spinner-body {
+  text-align: center;
+  margin: auto;
+}
+
+/* From https://stackoverflow.com/questions/50579924/bootstrap-modal-not-showing-properly-centered */
+.vertical-alignment-helper {
+  display:table;
+  height: 100%;
+  width: 100%;
+  pointer-events:none;
+}
+
+.vertical-align-center {
+  /* To center vertically */
+  display: table-cell;
+  vertical-align: middle;
+  pointer-events:none;
+}
+
+.modal-content {
+  /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+  width:inherit;
+  max-width:inherit; /* For Bootstrap 4 - to avoid the modal window stretching
+full width */
+  height:inherit;
+  /* To center horizontally */
+  margin: 0 auto;
+  pointer-events:all;
+}
+
+.wifiology-hr {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }

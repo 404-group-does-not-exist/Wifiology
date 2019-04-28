@@ -1,4 +1,11 @@
 const wifiologyServiceSetQueries = require('../queries/wifiologyServiceSet');
+const { WifiologyServiceSet } = require("../models/wifiologyServiceSet");
+
+async function createNewServiceSet(client, bssid, networkName, extraData){
+    let ss = new WifiologyServiceSet(null, bssid, networkName, extraData);
+    ss.serviceSetID = await wifiologyServiceSetQueries.insertWifiologyServiceSet(client, ss);
+    return ss;
+}
 
 
 async function getServiceSetByID(client, serviceSetID){
@@ -11,6 +18,7 @@ async function getServiceSetByBssid(client, bssid){
 
 
 module.exports = {
+    createNewServiceSet,
     getServiceSetByID,
     getServiceSetByBssid
 };

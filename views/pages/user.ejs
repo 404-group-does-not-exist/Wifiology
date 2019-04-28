@@ -5,13 +5,85 @@
         <% include ../partials/alerts.ejs %>
     </div>
     <div class="row">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><b>Username:</b> <%= targetUser.userName %> </li>
-            <li class="list-group-item"><b>Email address:</b> <%= targetUser.emailAddress %> </li>
-            <li class="list-group-item"><b>Is Admin</b> <%= targetUser.isAdmin %></li>
-            <li class="list-group-item"><b>Is Active</b> <%= targetUser.isActive %></li>
-            <li class="list-group-item"><b>Description:</b> <%= targetUser.userData.description || "N/A" %> </li>
-        </ul>
+        <div class="col">
+        <h1>User: <%= targetUser.userName %></h1>
+        <table class="table table-bordered, table-striped">
+            <tbody>
+                <tr><th>Username</th><td><%= targetUser.userName %></td></tr>
+                <tr><th>Email Address</th><td><%= targetUser.emailAddress %></td></tr>
+                <tr><th>Is Admin</th><td><%= targetUser.isAdmin %></td></tr>
+                <tr><th>Is Active</th><td><%= targetUser.isActive %></td></tr>
+                <tr><th>Description</th><td><%= targetUser.userData.description || "N/A" %></td></tr>
+                <tr><th>User Since: </th><td><%= targetUser.userData.userSince || "???" %></td></tr>
+            </tbody>
+
+        </table>
+        </div>
     </div>
+
+    <% if(locals.apiKeys) { %>
+    <hr class="wifiology-hr">
+    <div class="row">
+        <div class="col">
+        <h1>API Keys</h1>
+        <% if (apiKeys.length === 0) {%>
+        <p style="padding-top: 0.5em">No API keys for this user.</p>
+        <% } else { %>
+        <table class="table table-bordered, table-striped" id="apiKeysTable">
+            <thead>
+                <tr><th>Key ID</th><th>Key Description</th><th>Key Expiry</th><th>Delete Key</th></tr>
+            </thead>
+            <tbody>
+            <% for(let key of apiKeys) {%>
+                <tr id="key-row-<%= key.apiKeyID %>">
+                    <td><%= key.apiKeyID %></td>
+                    <td><%= key.apiKeyDescription%></td>
+                    <td><%= key.apiKeyExpiry || 'None' %></td>
+                    <td><button data-keyID="<%= key.apiKeyID %>" class="btn btn-danger btn-block delete-key-button">Delete</button></td>
+                </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <% } %>
+        </div>
+    </div>
+    <% } %>
+    <% if(locals.allowAPIKeyCreation || false) { %>
+    <hr class="wifiology-hr">
+    <div class="modal fade" id="keyCreationModal" tabindex="-1" role="dialog" aria-labelledby="keyCreationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="keyCreationModalLabell">API Key Created</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Your new API Key:
+                    <br>
+                    <input type="text" style="width: 100%" id="keyCreationModalKeyValue" disabled>
+                    <hr>
+                    <p>Keys can not be recovered once this modal is closed! Please copy this now.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+        <h1>Create A New API Key</h1>
+        <form action="/api/internal/users/apiKey" method="POST" id="createApiKeyForm">
+            <div class="form-group">
+                <label for="keyDescription">API Key Description (What it will be used for)</label>
+                <input type="text" class="form-control" id="keyDescription" aria-describedby="emailHelp" placeholder="Enter description" name="apiKeyDescription">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </form>
+        </div>
+    </div>
+    <% } %>
 </div>
 <% include ../partials/footer-new.ejs %>

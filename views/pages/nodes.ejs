@@ -5,6 +5,7 @@
         <% include ../partials/alerts.ejs %>
     </div>
     <div class="row">
+        <div class="col">
         <% if(!(userNodes.length > 0) && !(publicNodes.length > 0)) { %>
         <p>No nodes currently available.</p>
         <% }%>
@@ -58,6 +59,13 @@
             </tbody>
         </table>
         <% } %>
+        </div>
+    </div>
+    <hr class="wifiology-hr">
+    <div class="row">
+        <div class="col">
+            <a href="/nodes/new" class="btn btn-block btn-primary">Register A New Node</a>
+        </div>
     </div>
 </div>
 <% include ../partials/footer-new.ejs %>

@@ -52,7 +52,8 @@ function usersServiceConstructor(dbPool){
                         createdThrough: 'API',
                         createdByIP: remoteAddr,
                         createTime: new Date().toISOString(),
-                        description: newUserData.description || ""
+                        description: newUserData.description || "",
+                        userSince: new Date.toLocaleString()
                     },
                     false,
                     await featureFlags.getFlag("users/autoActivate", client, true)

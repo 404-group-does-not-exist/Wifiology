@@ -1,11 +1,13 @@
 class WifiologyServiceSet {
-    constructor(serviceSetID, bssid, networkName, extraData, infraMacAddresses=null, associatedMacAddresses=null) {
+    constructor(serviceSetID, bssid, networkName, extraData, infraMacAddresses=null,
+                associatedMacAddresses=null, jitterMeasurement=null) {
         this.serviceSetID = serviceSetID;
         this.bssid = bssid;
         this.networkName = networkName;
         this.extraData = extraData;
         this.infraMacAddresses = infraMacAddresses;
-        this.associatedMacAddresses = associatedMacAddresses
+        this.associatedMacAddresses = associatedMacAddresses;
+        this.jitterMeasurement = jitterMeasurement;
     }
 
     toRow() {
@@ -30,20 +32,24 @@ class WifiologyServiceSet {
         if(this.associatedMacAddresses){
             resp.associatedMacAddresses = this.associatedMacAddresses;
         }
+        if(this.jitterMeasurement){
+            resp.jitterMeasurement = this.jitterMeasurement.toApiResponse();
+        }
         return resp;
     }
 }
 
-function fromRow(row, infraMacAddresses=null, associatedMacAddresses=null) {
+function fromRow(row, infraMacAddresses=null, associatedMacAddresses=null, jitterMeasurement=null) {
     return new WifiologyServiceSet(
-        row.servicesetid, row.bssid, row.networkname, row.extradata, infraMacAddresses, associatedMacAddresses
+        row.servicesetid, row.bssid, row.networkname, row.extradata, infraMacAddresses,
+        associatedMacAddresses, jitterMeasurement
     );
 }
 
-function fromAPI(apiData, infraMacAddresses=null, associatedMacAddresses=null){
+function fromAPI(apiData, infraMacAddresses=null, associatedMacAddresses=null, jitterMeasurement=null){
     return new WifiologyServiceSet(
         null, apiData.bssid, apiData.networkName, apiData.extraData,
-        infraMacAddresses, associatedMacAddresses
+        infraMacAddresses, associatedMacAddresses, jitterMeasurement
     )
 }
 

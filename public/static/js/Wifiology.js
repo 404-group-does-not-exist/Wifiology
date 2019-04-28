@@ -1,3 +1,22 @@
+function wifiologyAllSetup(){
+    var timer = null;
+    var modal = null;
+
+    $(document).ready(function() {
+        $(document).ajaxStart(function () {
+            modal = $("#wifiology-loading-spinner");
+            timer && clearTimeout(timer);
+            timer = setTimeout(function(){
+                modal.modal('show');
+            }, 500);
+        });
+        $(document).ajaxComplete(function () {
+            clearTimeout(timer);
+            $("#wifiology-loading-spinner").modal('hide');
+        });
+    });
+}
+
 function wifiologyNodesSetup(){
     $(document).ready(function(){
         $(".nodes-table-datarow").click(function(){
@@ -74,7 +93,6 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
            id = "serviceSetList-" + i;
            i++;
 
-           console.log(networkName, id);
            bssidList = "";
            for(bssid of serviceSets[networkName].bssids){
                bssidList = bssidList.concat(Mustache.render(innerSSTemplate, {bssid: bssid}))
@@ -441,5 +459,61 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
         setupChannelSelector();
         setupAutomaticUpdateBox();
         populateLatestData();
+    });
+}
+
+function wifiologyUserSetup(viewingUserID, runningAsUserID, baseApiUrl){
+    var keyCreationForm;
+    var apiKeysTable;
+    var apiKeysTableBody;
+    var keyID;
+
+    function setupKeyCreationForm(){
+        keyCreationForm = $("#createApiKeyForm");
+        if(keyCreationForm){
+            keyCreationForm.submit(function(e){
+                e.preventDefault();
+                $.post({
+                    type: "POST",
+                    url: keyCreationForm.attr("action"),
+                    data: $(this).serialize(),
+                    success: function(resp){
+                        apiKeysTableBody.append(
+                            "<tr id=\"key-row-" + resp.info.apiKeyID + "\"><td>"
+                            + resp.info.apiKeyID + "</td><td>" + resp.info.apiKeyDescription + "</td>"
+                            + "<td>" + (resp.info.apiKeyExpiry || "None") + "</td>"
+                            + "<td><button data-keyID=\"" + resp.info.apiKeyID
+                            + "\" class=\"btn btn-danger btn-block delete-key-button\">Delete</button></td>"
+                        );
+                        $("#keyCreationModalKeyValue").val(resp.key);
+                        $("#keyCreationModal").modal(
+                            "show"
+                        );
+                        setupKeyDeletion();
+                    }
+                })
+            });
+        }
+    }
+
+    function setupKeyDeletion(){
+        $(".delete-key-button").on("click", function(){
+            keyID = $(this).attr("data-keyID");
+            $.post({
+                type: "DELETE",
+                url: baseApiUrl + "/users/apiKey/" + keyID,
+                success: function(resp){
+                    $("#key-row-" + keyID).remove();
+                }
+            })
+        });
+    }
+
+    $(document).ready(function(){
+        apiKeysTable = $("#apiKeysTable");
+        apiKeysTableBody = $("#apiKeysTable tbody");
+        keyCreationForm = $("#createApiKeyForm");
+        setupKeyCreationForm();
+        setupKeyDeletion();
     });
 }
