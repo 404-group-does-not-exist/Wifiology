@@ -307,7 +307,7 @@ function routesConstructor(app, passport, dbPool){
                         }
                     }
                     else {
-                        acc[ss.networkName][ss.bssid][nodeIDs].push(measurementNodeID)
+                        acc[ss.networkName][ss.bssid].nodeIDs.push(measurementNodeID)
                     }
                     return acc;
                 }, networkServiceSets);
