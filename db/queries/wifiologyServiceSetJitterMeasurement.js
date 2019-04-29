@@ -54,10 +54,30 @@ async function selectWifiologyJitterMeasurementsByServiceSetIDs(client, serviceS
     return result.rows.map(r => fromRow(r));
 }
 
+
+async function selectServiceSetLatestJitterData(client, serviceSetID, limit=10){
+    let result = await client.query(
+        `
+        SELECT (avgJitter/1000.0)/beaconInterval AS "relativeAverageJitter", 
+               (stdDevJitter/1000.0)/beaconInterval AS "relativeDeviationJitter", 
+               (maxJitter/1000.0)/beaconInterval AS "relativeMaxJitter",
+               m.measurementStartTime AS "jitterMeasurementTime"
+        FROM serviceSetJitterMeasurement AS j
+        JOIN measurement AS m on j.measurementID = m.measurementID
+        WHERE j.serviceSetID = $serviceSetID
+        ORDER BY j.measurementID DESC
+        LIMIT $limit
+        `,
+        {serviceSetID, limit}
+    );
+    return result.rows;
+}
+
 module.exports = {
     insertWifiologyJitterMeasurement,
     selectWifiologyJitterMeasurementsByMeasurementID,
     selectWifiologyJitterMeasurementsByMeasurementIDs,
     selectWifiologyJitterMeasurementsByServiceSetIDs,
-    selectWifiologyJitterMeasurementByMeasurementIDAndServiceSetID
+    selectWifiologyJitterMeasurementByMeasurementIDAndServiceSetID,
+    selectServiceSetLatestJitterData
 };

@@ -5,7 +5,8 @@ const {
 const { getApiKeysByOwnerID, createNewApiKey, getApiKeyByID, deleteApiKey } = require("../db/data/wifiologyApiKey");
 const { getAllUsers, getUserByID } = require('../db/data/wifiologyUser');
 const { getWifiologyNodeByName, createNewWifiologyNode, getNodesAvailableToUser } = require('../db/data/wifiologyNode');
-const { getDistinctServiceSetsByNodeIDs } = require('../db/data/wifiologyServiceSet');
+const { getDistinctServiceSetsByNodeIDs, getServiceSetByID } = require('../db/data/wifiologyServiceSet');
+const { getServiceSetBusyStatusFromJitter } = require('../db/data/wifiologyServiceSetJitterMeasurement');
 const { getDatabaseInfo } = require('../db/data/wifiologyInfo');
 const { version } = require("../info");
 const { connectionWrapper, transactionWrapper } = require("../db/core");
@@ -330,6 +331,31 @@ function routesConstructor(app, passport, dbPool){
 
     }
 
+    async function serviceSetGetHandler(req, res){
+        return await connectionWrapper(dbPool, async function(client){
+            let serviceSetID = parseInt(req.params.serviceSetID);
+            let serviceSet = await getServiceSetByID(client, serviceSetID);
+            let busyData = await getServiceSetBusyStatusFromJitter(client, serviceSetID);
+            if(!serviceSet){
+                req.flash('error', `No such service set with ID ${serviceSetID}!`);
+                res.redirect('/');
+            } else {
+                res.render(
+                    'pages/basicServiceSet',
+                    await templateObjectGenerator(
+                        req, res,
+                        {
+                            title: `Service Set ${serviceSetID}`,
+                            serviceSet,
+                            busyData,
+                            scriptToRun: `wifiologyAllSetup();`
+                        }
+                    )
+                )
+            }
+        });
+    }
+
 
     async function loginPostHandler(req, res){
         req.flash('success', `Logged in as ${req.user.userName}`);
@@ -402,6 +428,7 @@ function routesConstructor(app, passport, dbPool){
     app.get('/nodes/:nodeID/chart', authenticatedAsyncHandler(nodeChartGetHandler));
 
     app.get('/networks', authenticatedAsyncHandler(networksGetHandler));
+    app.get('/serviceSets/:serviceSetID', authenticatedAsyncHandler(serviceSetGetHandler));
 
     app.get('/api/internal/nodes/:nodeID/measurements', authenticatedAsyncHandler(secretNodeMeasurementsAPI));
     app.post('/api/internal/users/apiKey', authenticatedAsyncHandler(apiKeyCreatePostHandler));

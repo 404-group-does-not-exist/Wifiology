@@ -77,15 +77,12 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
             for(var j = 0; j < data[i].serviceSets.length; j++){
                 networkName = data[i].serviceSets[j].networkName;
                 bssid = data[i].serviceSets[j].bssid;
-                if(serviceSets.hasOwnProperty(networkName)){
-                    if(!serviceSets[networkName].bssids.includes(bssid)){
-                        serviceSets[networkName].bssids.push(bssid);
-                    }
-                } else {
-                    serviceSets[networkName] = {
-                        bssids: [bssid]
-                    }
+                if(!serviceSets.hasOwnProperty(networkName)) {
+                    serviceSets[networkName] = {}
                 }
+                serviceSets[networkName][bssid] = {
+                    serviceSetID: data[i].serviceSets[j].serviceSetID
+                };
             }
         }
         i = 0;
@@ -94,8 +91,12 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
            i++;
 
            bssidList = "";
-           for(bssid of serviceSets[networkName].bssids){
-               bssidList = bssidList.concat(Mustache.render(innerSSTemplate, {bssid: bssid}))
+           for(bssid of Object.keys(serviceSets[networkName])){
+               bssidList = bssidList.concat(
+                   Mustache.render(innerSSTemplate, {
+                       bssid: bssid,
+                       serviceSetID: serviceSets[networkName][bssid].serviceSetID
+                   }))
            }
 
            list.append(
@@ -104,7 +105,7 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                    {
                        id: id,
                        networkName: networkName,
-                       bssidCount: serviceSets[networkName].bssids.length,
+                       bssidCount: Object.keys(serviceSets[networkName]).length,
                        bssidList: bssidList
                    }
                )

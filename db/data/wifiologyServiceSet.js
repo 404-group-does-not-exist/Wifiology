@@ -1,4 +1,5 @@
 const wifiologyServiceSetQueries = require('../queries/wifiologyServiceSet');
+const wifiologyLinkingTableQueries = require('../queries/wifiologyMeasurementLinkingTables');
 const { WifiologyServiceSet } = require("../models/wifiologyServiceSet");
 
 async function createNewServiceSet(client, bssid, networkName, extraData){
@@ -20,10 +21,28 @@ async function getDistinctServiceSetsByNodeIDs(client, nodeIDs){
     return await wifiologyServiceSetQueries.selectDistinctServiceSetsByNodeIDs(client, nodeIDs);
 }
 
+async function getServiceSetRecentData(client, serviceSetID, nodeIDs, limit=500){
+    let measurementIDs = await wifiologyLinkingTableQueries.selectRecentServiceSetMeasurementIDs(
+         client, serviceSetID, nodeIDs, limit
+    );
+    let infraMacs = await wifiologyLinkingTableQueries.selectServiceSetInfraMacsOverMeaurements(
+         client, serviceSetID, measurementIDs
+    );
+    let associatedMacs = await wifiologyLinkingTableQueries.selectServiceSetAssociatedMacsOverMeaurements(
+         client, serviceSetID, measurementIDs
+    );
+
+    return {
+        infrastructurMacAddresses: infraMacs,
+        associatedMacAddresses: associatedMacs
+    }
+}
+
 
 module.exports = {
     createNewServiceSet,
     getServiceSetByID,
     getServiceSetByBssid,
-    getDistinctServiceSetsByNodeIDs
+    getDistinctServiceSetsByNodeIDs,
+    getServiceSetRecentData
 };

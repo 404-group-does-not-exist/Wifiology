@@ -53,30 +53,6 @@ async function updateServiceSetNetworkNameIfNeeded(client, bssid, networkName){
     )
 }
 
-async function selectWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s 
-         JOIN associationStationServiceSetMap AS a ON s.stationid = a.associatedstationid
-         WHERE a.associatedServiceSetID = $serviceSetID AND a.measurementID = $measurementID
-        `,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
-}
-
-async function selectWifiologyServiceSetInfraMacAddresses(client, measurementID, serviceSetID){
-    let result = await client.query(
-        `SELECT s.macAddress 
-         FROM station AS s
-         JOIN infrastructureStationServiceSetMap AS i ON s.stationid = i.mapstationid
-         WHERE i.mapServiceSetID = $serviceSetID AND i.measurementID = $measurementID
-        `,
-        {measurementID, serviceSetID}
-    );
-    return result.rows;
-}
-
 async function selectAggregateWifiologyServiceSetAssociatedMacAddresses(client, measurementID, serviceSetIDs){
     let result = await client.query(
         `SELECT s.macAddress, a.associatedServiceSetID
@@ -115,13 +91,67 @@ async function selectAggregateWifiologyServiceSetInfraMacAddresses(client, measu
     }, {});
 }
 
+async function selectServiceSetInfraMacsOverMeaurements(client, serviceSetID, measurementIDs){
+    let result = await client.query(
+        `SELECT s.macAddress, i.mapServiceSetID
+         FROM station AS s
+         JOIN infrastructureStationServiceSetMap AS i ON s.stationid = i.mapstationid
+         WHERE i.mapServiceSetID = $serviceSetID AND i.measurementID = ANY($measurementIDs)
+        `,
+        {serviceSetID, measurementIDs}
+    );
+    return result.rows.reduce((acc, row) => {
+        if(row.measurementid in acc){
+            acc[row.measurementid].push(row.macaddress);
+        } else {
+            acc[row.measurementid] = [row.macaddress];
+        }
+        return acc;
+    }, {});
+}
+
+async function selectServiceSetAssociatedMacsOverMeaurements(client, serviceSetID, measurementIDs){
+    let result = await client.query(
+            `SELECT s.macAddress, a.associatedServiceSetID
+             FROM station AS s
+                    JOIN associationStationServiceSetMap AS a ON s.stationid = a.associatedstationid
+             WHERE a.associatedServiceSetID = $serviceSetID AND a.measurementID = ANY($measurementIDs)
+        `,
+        {measurementIDs, serviceSetID}
+    );
+    return result.rows.reduce((acc, row) => {
+        if(row.measurementid in acc){
+            acc[row.measurementid].push(row.macaddress);
+        } else {
+            acc[row.measurementid] = [row.macaddress];
+        }
+        return acc;
+    }, {});
+}
+
+
+async function selectRecentServiceSetMeasurementIDs(client, serviceSetID, nodeIDs, limit){
+    let result = await client.query(
+        `SELECT mss.measurementID 
+         FROM measurementServiceSet AS mss
+         JOIN measurement AS m ON mss.measurementID = m.measurementID
+         WHERE m.measurementNodeID = ANY($nodeIDs) AND mss.serviceSetID = $serviceSetID
+         ORDER BY mss.measurementID DESC
+         LIMIT $limit
+        `,
+        {serviceSetID, nodeIDs, limit}
+    );
+    return result.rows.map(r => r.measurementid).reverse();
+}
+
 module.exports = {
     insertMeasurementStationLink,
     insertServiceSetAssociatedStation,
     insertServiceSetInfraStation,
     updateServiceSetNetworkNameIfNeeded,
-    selectWifiologyServiceSetAssociatedMacAddresses,
-    selectWifiologyServiceSetInfraMacAddresses,
     selectAggregateWifiologyServiceSetAssociatedMacAddresses,
-    selectAggregateWifiologyServiceSetInfraMacAddresses
+    selectAggregateWifiologyServiceSetInfraMacAddresses,
+    selectServiceSetAssociatedMacsOverMeaurements,
+    selectServiceSetInfraMacsOverMeaurements,
+    selectRecentServiceSetMeasurementIDs
 };

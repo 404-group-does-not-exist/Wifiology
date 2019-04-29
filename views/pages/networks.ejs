@@ -27,7 +27,11 @@
 
                                 <% for(let bssid of Object.keys(networkServiceSets[networkName])) { %>
                                     <tr>
-                                        <td><%= bssid %></td>
+                                        <td>
+                                            <a href="/serviceSets/<%= networkServiceSets[networkName][bssid].serviceSet.serviceSetID %>">
+                                                <%= bssid %>
+                                            </a>
+                                        </td>
                                         <td>
                                             <% let j = 0; %>
                                             <% for(let nodeID of networkServiceSets[networkName][bssid].nodeIDs) { %><% if(j !== 0 ){%>, <%}%><a href="/nodes/<%= nodeID %>"><%= nodeID %></a><% j++; %><% }%>
