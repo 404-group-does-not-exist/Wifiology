@@ -1,0 +1,14 @@
+language: node_js
+dist: xenial
+node_js:
+  - "10"
+services:
+  - postgresql
+addons:
+  postgresql: "9.6"
+before_script:
+  - psql -c "CREATE DATABASE wifiology;" -U postgres
+env:
+  global:
+    - PGPORT=5432
+    - DATABASE_URL=postgresql://postgres@127.0.0.1:5432/wifiology

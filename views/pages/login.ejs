@@ -1,0 +1,44 @@
+<% include ../partials/header-new.ejs %>
+<div class="container">
+	<div class="row">
+		<div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+			<% include ../partials/alerts.ejs %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+			<div class="card card-login my-5">
+				<div class="card-header text-center">
+					<h1>Wifiology</h1>
+				</div>
+				<div class="card-body">
+				<form class="form-login" action="/login" method="POST">
+					<h1 class="h3 mb-3 font-weight-normal">Please Log In</h1>
+					<div class="form-group">
+						<label for="inputUsername" class="sr-only">Username</label>
+						<input type="text" id="inputUsername" name="username" class="form-control" placeholder="Username" required autofocus>
+					</div>
+					<div class="form-group">
+						<label for="inputPassword" class="sr-only">Password</label>
+						<input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+					</div>
+					<!--<div class="checkbox mb-3">
+					  <label>
+						<input type="checkbox" value="remember-me"> Remember me |
+					  </label>
+						  <a href="">Forgot Password?</a>
+					</div>-->
+					<div class="form-group">
+						<button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+					</div>
+					<hr class="my-4">
+					<div class="form-group">
+						<a class="btn btn-lg btn-secondary btn-block" href="/register">Register</a>
+					</div>
+				</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<% include ../partials/footer-new.ejs %>

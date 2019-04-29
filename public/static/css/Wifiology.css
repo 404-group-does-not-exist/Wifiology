@@ -1,0 +1,136 @@
+
+/* This css was created by Bootstrap for their login page example */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 3em;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 3em;
+}
+
+/*
+.footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: 2em;
+  height: 2em;
+  clear:both;
+  padding-top:1em;
+} */
+
+.login-container {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #f5f5f5;
+  height:100%; /* important to vertically align the container */
+}
+
+.alerts-container {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.card-login {
+  border-radius: 2rem;
+  background-color: #f5f5f5;
+}
+
+.form-login {
+  width: 100%;
+  max-width: 330px;
+  padding: 15px;
+  margin: auto;
+}
+.form-login .checkbox {
+  font-weight: 400;
+}
+.form-login .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-login .form-control:focus {
+  z-index: 2;
+}
+.form-login input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-login input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.logged-in-as {
+  padding-right: 1em;
+}
+
+
+
+.list-button-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.list-button-link:hover
+{
+  color: inherit;
+  text-decoration:none;
+}
+
+.list-button-link .fa:before {
+  content: "\f13a";
+}
+
+.wifiology-spinner-body {
+  text-align: center;
+  margin: auto;
+}
+
+/* From https://stackoverflow.com/questions/50579924/bootstrap-modal-not-showing-properly-centered */
+.vertical-alignment-helper {
+  display:table;
+  height: 100%;
+  width: 100%;
+  pointer-events:none;
+}
+
+.vertical-align-center {
+  /* To center vertically */
+  display: table-cell;
+  vertical-align: middle;
+  pointer-events:none;
+}
+
+.modal-content {
+  /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+  width:inherit;
+  max-width:inherit; /* For Bootstrap 4 - to avoid the modal window stretching
+full width */
+  height:inherit;
+  /* To center horizontally */
+  margin: 0 auto;
+  pointer-events:all;
+}
+
+.wifiology-hr {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
