@@ -3,11 +3,13 @@ const wifiologyStationQueries = require('../queries/wifiologyStation');
 const wifiologyServiceSetQueries = require('../queries/wifiologyServiceSet');
 const wifiologyLinkingTableQueries = require('../queries/wifiologyMeasurementLinkingTables');
 const wifiologyNodeQueries = require('../queries/wifiologyNode');
+const wifiologyJitterQueries = require('../queries/wifiologyServiceSetJitterMeasurement');
 
 const measurementFromAPI = require('../models/wifiologyMeasurement').fromAPI;
 const stationFromAPI = require('../models/wifiologyStation').fromAPI;
 const serviceSetFromAPI = require('../models/wifiologyServiceSet').fromAPI;
 const dataCountersFromAPI = require('../models/wifiologyDataCounters').fromAPI;
+const jitterMeasurementFromAPI = require('../models/wifiologyServiceSetJitterMeasurement').fromAPI;
 
 
 async function lookupOrLoadNewStation(client, rawNewStation){
@@ -60,21 +62,33 @@ function loadServiceSetAdditionalInfoConstructor(client, rawServiceSet, measurem
                 client, measurementID, serviceSet.serviceSetID, macAddress
             )
         ));
+        if(rawServiceSet.jitterMeasurement){
+            await wifiologyJitterQueries.insertWifiologyJitterMeasurement(
+                client, jitterMeasurementFromAPI(
+                    rawServiceSet.jitterMeasurement, measurementID, serviceSet.serviceSetID
+                )
+            );
+        }
         return serviceSet;
     }
     return execute;
 }
 
-
-async function loadNewMeasurementData(client, newMeasurementData, nodeID){
-    let newMeasurement = measurementFromAPI(newMeasurementData, nodeID);
-    await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID);
+async function createNewMeasurementFromAPIData(client, rawMeasurement, nodeID){
+    let newMeasurement = measurementFromAPI(rawMeasurement, nodeID);
     newMeasurement.measurementID = await wifiologyMeasurementQueries.insertWifiologyMeasurement(client, newMeasurement);
+    return newMeasurement;
+}
+
+
+async function loadNewMeasurementData(client, rawMeasurementDataSet, nodeID){
+    await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID);
+    let newMeasurement = await createNewMeasurementFromAPIData(client, rawMeasurementDataSet, nodeID);
     let mID = newMeasurement.measurementID;
 
-    let newStationsData = newMeasurementData.stations;
-    let newServiceSetsData = newMeasurementData.serviceSets;
-    let bssidToNetworkNameMap = newMeasurementData.bssidToNetworkNameMap;
+    let newStationsData = rawMeasurementDataSet.stations;
+    let newServiceSetsData = rawMeasurementDataSet.serviceSets;
+    let bssidToNetworkNameMap = rawMeasurementDataSet.bssidToNetworkNameMap;
 
 
 
@@ -135,6 +149,14 @@ function measurementDataSetConstructor(client){
             client, measurement.measurementID
         );
         let serviceSetIDs = serviceSets.map(ss => ss.serviceSetID);
+        let jitterMeasurements = await wifiologyJitterQueries.selectWifiologyJitterMeasurementsByMeasurementID(
+            client, measurement.measurementID
+        );
+        let jitterMeasurementMap = {};
+        for(let jitterMeasurement of jitterMeasurements){
+            jitterMeasurementMap[jitterMeasurement.serviceSetID] = jitterMeasurement;
+        }
+
         let infraMacAddressMap = await wifiologyLinkingTableQueries.selectAggregateWifiologyServiceSetInfraMacAddresses(
             client, measurement.measurementID, serviceSetIDs
         );
@@ -144,21 +166,9 @@ function measurementDataSetConstructor(client){
         for(let serviceSet of serviceSets){
             serviceSet.infraMacAddresses = infraMacAddressMap[serviceSet.serviceSetID] || [];
             serviceSet.associatedMacAddresses = associatedMacAddressMap[serviceSet.serviceSetID] || [];
+            serviceSet.jitterMeasurement = jitterMeasurementMap[serviceSet.serviceSetID] || null;
         }
 
-        /*await Promise.all(
-            serviceSets.map(
-                async ss => {
-                    ss.infraMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetInfraMacAddresses(
-                        client, measurement.measurementID, ss.serviceSetID
-                    );
-                    ss.associatedMacAddresses = await wifiologyLinkingTableQueries.selectWifiologyServiceSetAssociatedMacAddresses(
-                        client, measurement.measurementID, ss.serviceSetID
-                    );
-                    return ss;
-                }
-            )
-        );*/
         return {
             measurement: measurement,
             stations: stations,
@@ -217,6 +227,13 @@ async function getWifiologyMeasurementByNodeIDChannelAndStartTime(client, nodeID
     )
 }
 
+async function getWifiologyMeasurementDuplicate(client, newMeasurementData, nodeID){
+    let newMeasurement = measurementFromAPI(newMeasurementData, nodeID);
+    return await wifiologyMeasurementQueries.selectWifiologyMeasurementByUniqueAttributes(
+        client, newMeasurement
+    );
+}
+
 
 module.exports = {
     loadNewMeasurementData,
@@ -228,5 +245,7 @@ module.exports = {
     getMeasurementDataSetsByNodeIDAndChannel,
     measurementDataSetToApiResponse,
     cleanUpOldWifiologyMeasurements,
-    getWifiologyMeasurementByNodeIDChannelAndStartTime
+    getWifiologyMeasurementByNodeIDChannelAndStartTime,
+    getWifiologyMeasurementDuplicate,
+    createNewMeasurementFromAPIData
 };

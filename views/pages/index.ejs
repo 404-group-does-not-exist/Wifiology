@@ -1,6 +1,27 @@
 <% include ../partials/header-new.ejs %>
 <% include ../partials/navbar.ejs %>
 <div class="container">
-    <% include ../partials/alerts.ejs %>
+    <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+            <% include ../partials/alerts.ejs %>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h1>Welcome To Wifiology</h1>
+            <p>Wifiology is an application for monitoring 802.11 networks. This application instance currently has <%= info.userCount %> users registered,
+            <%= info.nodeCount %> nodes registered, <%= info.measurementCount %> measurements recorded,
+            <%= info.serviceSetCount %> unique service sets seen, and <%= info.stationCount %> unique 802.11
+            devices seen.</p>
+            <hr>
+            <h3>Wifiology Source Code</h3>
+            <p>The source for the Wifiology server may be found
+                <a href="https://github.com/404-group-does-not-exist/Wifiology">here.</a>
+            </p><p>
+                The source code for the listener node may be found
+                <a href="https://github.com/404-group-does-not-exist/client_proof_of_concept">here.</a>
+            </p>
+        </div>
+    </div>
 </div>
 <% include ../partials/footer-new.ejs %>

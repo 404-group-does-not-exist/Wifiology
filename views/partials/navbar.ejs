@@ -9,6 +9,14 @@
             <li class="nav-item">
                 <a class="nav-link" href="/nodes">Nodes</a>
             </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Networks
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="/networks">Service Sets By Name</a>
+                </div>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="/users">Users</a>
             </li>
@@ -16,7 +24,10 @@
                 <a class="nav-link" href="/api/1.0/ui">API Docs</a>
             </li>
         </ul>
-        <span class="navbar-text logged-in-as">Logged in as: <%= locals.user.userName || '???' %></span>
+        <span class="navbar-text logged-in-as">
+            Logged in as:
+            <a class="btn btn-outline-success my-2 my-sm-0" href="/users/me"><%= locals.user.userName || '???' %><a/>
+        </span>
         <a class="btn btn-outline-success my-2 my-sm-0" href="/logout">Logout</a>
     </div>
 </nav>

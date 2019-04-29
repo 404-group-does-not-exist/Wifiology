@@ -5,13 +5,14 @@
         <% include ../partials/alerts.ejs %>
     </div>
     <div class="row">
+        <div class="col">
         <% if(!(userNodes.length > 0) && !(publicNodes.length > 0)) { %>
         <p>No nodes currently available.</p>
         <% }%>
         <% if(userNodes.length > 0){ %>
         <h1>My Nodes</h1>
         <table id="myNodesTable" class="table table-hover table-bordered nodes-table">
-            <thead>
+            <thead class="thead-light">
                 <tr>
                     <th scope="col">Node ID</th>
                     <th scope="col">Node Name</th>
@@ -58,6 +59,13 @@
             </tbody>
         </table>
         <% } %>
+        </div>
+    </div>
+    <hr class="wifiology-hr">
+    <div class="row">
+        <div class="col">
+            <a href="/nodes/new" class="btn btn-block btn-primary">Register A New Node</a>
+        </div>
     </div>
 </div>
 <% include ../partials/footer-new.ejs %>

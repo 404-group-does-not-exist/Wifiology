@@ -106,6 +106,24 @@ let apiDoc = {
                 'retryFrameCount'
             ]
         },
+        WifiologyServiceSetJitterMeasurement: {
+            type: 'object',
+            properties: {
+                measurementID: { type: 'integer' },
+                serviceSetID: { type: 'integer' },
+                minJitter: { type: 'number' },
+                maxJitter: { type: 'number' },
+                avgJitter: { type: 'number' },
+                stdDevJitter: { type: 'number' },
+                jitterHistogram: {
+                    type: 'string',
+                    description: 'The HDRHistogram, encoded, for this jitter measurement.'
+                },
+                jitterHistogramOffset: { type: 'number' },
+                beaconInterval: { type: 'integer' },
+                extraData: { type: 'object' }
+            }
+        },
         WifiologyMeasurement: {
             type: 'object',
             properties: {
@@ -154,6 +172,7 @@ let apiDoc = {
                     }
                 },
                 dataCounters: { $ref: '#/definitions/WifiologyDataCounters' },
+                jitterMeasurement: { $ref: '#/definitions/WifiologyServiceSetJitterMeasurement' },
                 extraData: {
                     type: 'object'
                 }
@@ -190,6 +209,7 @@ let apiDoc = {
             },
             required: ['macAddress', 'dataCounters']
         },
+
         NewWifiologyMeasurementServiceSet: {
             type: 'object',
             properties: {
@@ -210,6 +230,9 @@ let apiDoc = {
                     items: {
                         type: 'string'
                     }
+                },
+                jitterMeasurement: {
+                    $ref: '#/definitions/WifiologyServiceSetJitterMeasurement'
                 },
                 extraData: {
                     type: 'object'

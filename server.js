@@ -9,8 +9,8 @@ const expressWinston = require('express-winston');
 const flash = require('connect-flash');
 
 const session = require('express-session');
+const connectPg = require('connect-pg-simple');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const passportAuthSetup = require('./routes/authSetup');
 const routeInstaller = require('./routes/wifiologyRoutes');
 
@@ -35,16 +35,31 @@ if(process.env.AUTOMIGRATE){
 } else {
     AUTOMIGRATE = true;
 }
+let DATABASE_USE_SSL;
+if(process.env.DATABASE_USE_SSL){
+    DATABASE_USE_SSL = process.env.DATABASE_USE_SSL === 'true';
+} else {
+    DATABASE_USE_SSL = true;
+}
+let USE_PG_SESSION_SHARING;
+if(process.env.USE_PG_SESSION_SHARING){
+    USE_PG_SESSION_SHARING = process.env.USE_PG_SESSION_SHARING === 'true';
+
+} else {
+    USE_PG_SESSION_SHARING = false;
+}
 
 
-function createApplication(databaseUrl, autoMigrate){
+
+function createApplication(databaseUrl, autoMigrate, useSSL, usePGSessionSharing){
     let application = express();
     if(autoMigrate){
         doMigrationUpSync(databaseUrl);
     }
 
-    let pool = createPostgresPool(databaseUrl, true);
+    let pool = createPostgresPool(databaseUrl, useSSL);
     let featureFlags = new FeatureFlags(pool);
+    let expressSession;
 
     application.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
     application.use(bodyParser.json({ limit: '100mb'}));
@@ -91,7 +106,23 @@ function createApplication(databaseUrl, autoMigrate){
 
     passportAuthSetup(passport, pool, featureFlags);
 
-    application.use(session({secret: process.env.SECRET || 'qov8yHA3grUJ1PjWdntx'}));
+    if(usePGSessionSharing){
+        expressSession = session({
+            store: new (connectPg(session))({
+                pool,
+                tableName: '_user_sessions'
+            }),
+            secret: process.env.SECRET || 'qov8yHA3grUJ1PjWdntx',
+            resave: false,
+            cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
+        });
+    } else {
+        expressSession = session({secret: process.env.SECRET || 'qov8yHA3grUJ1PjWdntx'});
+    }
+
+    application.use(
+        expressSession
+    );
     application.use(flash());
     application.use(passport.initialize());
     application.use(passport.session());
@@ -134,7 +165,7 @@ if (require.main === module) {
         timestamp: true
     }));
 
-    application = createApplication(DATABASE_URL, AUTOMIGRATE)
+    application = createApplication(DATABASE_URL, AUTOMIGRATE, DATABASE_USE_SSL, USE_PG_SESSION_SHARING)
         .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 }
 

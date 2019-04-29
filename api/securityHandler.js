@@ -1,7 +1,7 @@
 const basicAuth = require('basic-auth');
 const { getUserByUserName } = require('../db/data/wifiologyUser');
 const { getUserByApiKey } = require('../db/data/wifiologyApiKey');
-const { spawnClientFromPool, release } = require('../db/core');
+const { connectionWrapper } = require('../db/core');
 
 
 function securityAuthHandlerConstructor(dbPool){
@@ -12,9 +12,7 @@ function securityAuthHandlerConstructor(dbPool){
             return Promise.resolve(false);
         }
 
-
-        let client = await spawnClientFromPool(dbPool);
-        try{
+        return await connectionWrapper(dbPool, async function(client){
             let retrievedUser = await getUserByUserName(client, user.name);
 
             if(retrievedUser && !retrievedUser.isActive){
@@ -31,10 +29,7 @@ function securityAuthHandlerConstructor(dbPool){
             else {
                 return Promise.resolve(false);
             }
-        }
-        finally {
-            await release(client);
-        }
+        });
     }
 
     async function ApiKeyAuth(req, scopes, definitions) {
@@ -42,8 +37,8 @@ function securityAuthHandlerConstructor(dbPool){
         if(!apiKey){
             return Promise.resolve(false);
         }
-        let client = await spawnClientFromPool(dbPool);
-        try {
+
+        return await connectionWrapper(dbPool, async function(client){
             let retrievedUser = await getUserByApiKey(client, apiKey);
             if(retrievedUser && !retrievedUser.isActive){
                 throw {
@@ -58,10 +53,7 @@ function securityAuthHandlerConstructor(dbPool){
             } else {
                 return Promise.resolve(false);
             }
-        }
-        finally {
-            await release(client);
-        }
+        });
     }
 
     return {

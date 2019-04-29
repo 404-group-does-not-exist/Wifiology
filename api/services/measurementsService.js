@@ -1,16 +1,14 @@
 const wifiologyUserData = require('../../db/data/wifiologyUser');
 const wifiologyNodeData = require('../../db/data/wifiologyNode');
 const wifiologyMeasurementData = require('../../db/data/wifiologyMeasurement');
-const measurementFromAPI = require('../../db/models/wifiologyMeasurement').fromAPI;
 
-const { spawnClientFromPool, commit, rollback, release } = require("../../db/core");
+const { transactionWrapper } = require("../../db/core");
 
 function nodesServiceConstructor(dbPool){
     return  {
         async createNewMeasurementAPI(newMeasurementData, nodeID, userID){
-            let client = await spawnClientFromPool(dbPool);
-            let statusCode = 200;
-            try {
+            return await transactionWrapper(dbPool, async function(client){
+                let statusCode = 200;
                 let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
 
                 if(!node){
@@ -28,11 +26,10 @@ function nodesServiceConstructor(dbPool){
                         status: 403
                     }
                 }
-                let candidateMeasurement = measurementFromAPI(newMeasurementData, nodeID);
                 let finalResult;
 
-                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementByNodeIDChannelAndStartTime(
-                    client, nodeID, candidateMeasurement.channel, candidateMeasurement.startTime
+                let existingMeasurement = await wifiologyMeasurementData.getWifiologyMeasurementDuplicate(
+                    client, newMeasurementData,  nodeID
                 );
                 if(existingMeasurement){
                     finalResult = {
@@ -48,22 +45,11 @@ function nodesServiceConstructor(dbPool){
                         serviceSets: result.serviceSets.map(ss => ss.toApiResponse())
                     };
                 }
-
-
-                await commit(client);
                 return {result: finalResult, statusCode};
-            }
-            catch(e){
-                await rollback(client);
-                throw e;
-            }
-            finally {
-                await release(client);
-            }
+            });
         },
         async getNodeMeasurementDataSetsAPI(nodeID, channel, limit, lastPriorMeasurementID, userID){
-            let client = await spawnClientFromPool(dbPool);
-            try {
+            return transactionWrapper(dbPool, async function(client){
                 let node = await wifiologyNodeData.getWifiologyNodeByID(client, nodeID);
 
                 if(!node){
@@ -92,17 +78,8 @@ function nodesServiceConstructor(dbPool){
                         client, nodeID, channel, limit, lastPriorMeasurementID
                     );
                 }
-
-                await commit(client);
                 return results.map(wifiologyMeasurementData.measurementDataSetToApiResponse)
-            }
-            catch(e){
-                await rollback(client);
-                throw e;
-            }
-            finally {
-                await release(client);
-            }
+            });
         }
     };
 }

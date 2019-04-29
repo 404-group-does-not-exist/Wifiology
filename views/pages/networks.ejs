@@ -1,0 +1,57 @@
+<% include ../partials/header-new.ejs %>
+<% include ../partials/navbar.ejs %>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+            <% include ../partials/alerts.ejs %>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h1>802.11 Extended Service Sets Seen</h1>
+            <% if(Object.keys(networkServiceSets).length > 0) { %>
+            <ul class="list-group list-group-flush" id="service-sets-list-group">
+                <% let i = 0; %>
+                <% for(let networkName of Object.keys(networkServiceSets)) { %>
+                <li class="list-group-item px-0">
+                    <a data-toggle="collapse" href="#ss-<%= i %>" class="list-button-link collapsed">
+                        <%= networkName %> (<%= Object.keys(networkServiceSets[networkName]).length %> Access Points) <i class="fa" aria-hidden="false"></i>
+                    </a>
+                    <div class="collapse" id="ss-<%= i %>">
+                        <div class="card card-body mt-2">
+                            <table class="table">
+                                <thead>
+                                <tr><th>BSSID</th><th>Seen By Node IDs</th></tr>
+                                </thead>
+                                <tbody>
+
+                                <% for(let bssid of Object.keys(networkServiceSets[networkName])) { %>
+                                    <tr>
+                                        <td>
+                                            <a href="/serviceSets/<%= networkServiceSets[networkName][bssid].serviceSet.serviceSetID %>">
+                                                <%= bssid %>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <% let j = 0; %>
+                                            <% for(let nodeID of networkServiceSets[networkName][bssid].nodeIDs) { %><% if(j !== 0 ){%>, <%}%><a href="/nodes/<%= nodeID %>"><%= nodeID %></a><% j++; %><% }%>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </li>
+                <% i++; %>
+                <% } %>
+            </ul>
+            <% } else { %>
+            <p>No service sets visible yet.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+
+<% include ../partials/footer-new.ejs %>

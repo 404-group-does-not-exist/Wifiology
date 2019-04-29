@@ -33,19 +33,19 @@ async function doMigrationUpSync(DATABASE_URL){
 }
 
 
-async function spawnClientFromPool(dbPool, beginTransaction=true) {
+async function spawnClientFromPool(dbPool,) {
     let client = await dbPool.connect();
     try {
-        named.patch(client);
-        if (beginTransaction) {
-            await client.query("BEGIN");
-        }
         return client;
     }
     catch(e){
         client.release();
         throw e;
     }
+}
+
+async function begin(client){
+    return await client.query("BEGIN");
 }
 
 async function commit(client){
@@ -60,6 +60,37 @@ async function release(client){
     return Promise.resolve(client.release());
 }
 
+async function transactionWrapper(pool, callback){
+    const client = await pool.connect();
+    let rolledBack = false;
+    try {
+        named.patch(client);
+        await client.query('BEGIN');
+        try {
+            let result = await callback(client, async function(){ await client.query('ROLLBACK'); rolledBack=true; });
+            if(!rolledBack){
+                await client.query('COMMIT');
+            }
+            return result;
+        } catch(e) {
+            await client.query('ROLLBACK');
+            throw e;
+        }
+    } finally {
+        await client.release()
+    }
+}
+
+async function connectionWrapper(pool, callback){
+    const client = await pool.connect();
+    try {
+        named.patch(client);
+        return await callback(client);
+    } finally {
+        await client.release()
+    }
+}
+
 async function resetDatabase(client){
     await client.query("DROP SCHEMA IF EXISTS public cascade;");
     await client.query("CREATE SCHEMA public;");
@@ -68,10 +99,13 @@ async function resetDatabase(client){
 module.exports = {
     createPostgresPool,
     spawnClientFromPool,
+    begin,
     commit,
     rollback,
     release,
     doMigrationUpSync,
     doMigrationUpAsync,
-    resetDatabase
+    resetDatabase,
+    transactionWrapper,
+    connectionWrapper
 };

@@ -7,22 +7,53 @@
     <title><%= locals.title || 'Wifiology' %></title>
 	
 	<link rel='icon' href='../resources/img/favicon.ico' type='image/x-icon'/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+
     <!-- Bootstrap core CSS -->
 	<% if(locals.useDefaultBootrap) { %>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
     <% } else { %>
     <link rel="stylesheet" href="/static/css/sandstone-bootstrap.min.css">
     <% } %>
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/Wifiology.css" rel="stylesheet">
+
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <script src="https://github.com/nagix/chartjs-plugin-colorschemes/releases/download/v0.3.0/chartjs-plugin-colorschemes.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
     <script src="/static/js/Wifiology.js"></script>
+    <!-- Front End Templates -->
+    <% include templates.ejs %>
+
     <% if(locals.scriptToRun) { %>
-    <script type="application/javascript"><%- locals.scriptToRun %></script>
+      <script type="application/javascript"><%- locals.scriptToRun %></script>
     <% }%>
 
-    <!-- Custom styles for this template -->
-    <link href="/static/css/Wifiology.css" rel="stylesheet">
+
   </head>
   <body>
+  <!--<div class="spinner-border wifiology-spinner" role="status" id="wifiology-loading-spinner" hidden>
+    <span class="sr-only">Loading...</span>
+  </div>-->
+
+  <div class="modal" id="wifiology-loading-spinner">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Loading...</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body wifiology-spinner-body">
+          <i class="fa fa-spin fa-spinner fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>

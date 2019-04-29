@@ -33,6 +33,10 @@ async function wifiologyNodeHeartbeat(client, nodeID){
     return await wifiologyNodeQueries.updateNodeLastSeen(client, nodeID)
 }
 
+async function getNodesAvailableToUser(client, userID, limit, offset){
+    return await wifiologyNodeQueries.selectWifiologyNodesVisibleToUser(client, userID, limit, offset);
+}
+
 module.exports = {
     createNewWifiologyNode,
     getWifiologyNodeByID,
@@ -40,5 +44,6 @@ module.exports = {
     getWifiologyNodesByOwnerID,
     getAllWifiologyNodes,
     getAllPublicWifiologyNodes,
-    wifiologyNodeHeartbeat
+    wifiologyNodeHeartbeat,
+    getNodesAvailableToUser
 };

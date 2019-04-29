@@ -1,25 +1,17 @@
 const wifiologyApiKeyData = require('../../db/data/wifiologyApiKey');
 const wifiologyUserData = require('../../db/data/wifiologyUser');
-const { spawnClientFromPool, commit, release } = require("../../db/core");
+const { transactionWrapper } = require("../../db/core");
 
 function usersServiceConstructor(dbPool){
     return  {
         async getApiKeysForUserAPI(ownerID){
-            let client = await spawnClientFromPool(dbPool);
-            try {
+            return await transactionWrapper(dbPool, async function(client){
                 let keys = await wifiologyApiKeyData.getApiKeysByOwnerID(client, ownerID);
-                let result = keys.map(u => u.toApiResponse());
-                await commit(client);
-                return result;
-            }
-            finally {
-                await release(client);
-            }
-
+                return keys.map(u => u.toApiResponse());
+            });
         },
         async getApiKeyByIDAPI(ownerID, apiKeyID){
-            let client = await spawnClientFromPool(dbPool);
-            try {
+            return await transactionWrapper(dbPool, async function(client){
                 let key = await wifiologyApiKeyData.getApiKeyByID(client, apiKeyID);
                 if(!key){
                     throw {
@@ -35,19 +27,11 @@ function usersServiceConstructor(dbPool){
                         message: `Not allowed ot view API Key ID ${apiKeyID}`
                     }
                 }
-                let result = key.toApiResponse();
-                await commit(client);
-                return result;
-            }
-            finally {
-                await release(client);
-            }
-
+                return key.toApiResponse();
+            });
         },
         async createAPIKeyAPI(ownerID, newApiKeyData){
-            let client =  await spawnClientFromPool(dbPool);
-
-            try {
+            return await transactionWrapper(dbPool, async function(client){
                 let user = await wifiologyUserData.getUserByID(client, ownerID);
                 if(!user){
                     throw {
@@ -60,20 +44,15 @@ function usersServiceConstructor(dbPool){
                 let newKey = await wifiologyApiKeyData.createNewApiKey(
                     client, ownerID, newApiKeyData.description
                 );
-                let result = {
+                return {
                     key: newKey.key,
                     info: newKey.info.toApiResponse()
                 };
-                await commit(client);
-                return result;
-            }
-            finally {
-                await release(client);
-            }
+
+            });
         },
         async deleteApiKeyByIDAPI(ownerID, apiKeyID){
-            let client = await spawnClientFromPool(dbPool);
-            try {
+            return await transactionWrapper(dbPool, async function(client){
                 let key = await wifiologyApiKeyData.getApiKeyByID(client, apiKeyID);
                 if(!key){
                     throw {
@@ -90,13 +69,8 @@ function usersServiceConstructor(dbPool){
                     }
                 }
                 await wifiologyApiKeyData.deleteApiKey(client, apiKeyID);
-                await commit(client);
                 return {};
-            }
-            finally {
-                await release(client);
-            }
-
+            });
         }
     };
 }
