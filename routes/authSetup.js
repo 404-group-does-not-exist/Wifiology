@@ -82,9 +82,9 @@ function authSetup(passport, dbPool, featureFlags){
                 let userData = {
                     createdThrough: 'WebUI',
                     createdByIP: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-                    createTime: new Date().toISOString(),
+                    createTime: (new Date()).toISOString(),
                     description: "N/A",
-                    userSince: new Date.toLocaleString()
+                    userSince: (new Date()).toLocaleString()
                 };
                 let user = await createNewUser(
                     client, emailAddress, username, password, userData, false, isActive
