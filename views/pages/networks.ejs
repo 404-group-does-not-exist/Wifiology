@@ -15,7 +15,7 @@
                 <% for(let networkName of Object.keys(networkServiceSets)) { %>
                 <li class="list-group-item px-0">
                     <a data-toggle="collapse" href="#ss-<%= i %>" class="list-button-link collapsed">
-                        <%= networkName %> (<%= networkServiceSets[networkName].length %> Access Points) <i class="fa" aria-hidden="false"></i>
+                        <%= networkName %> (<%= Object.keys(networkServiceSets[networkName]).length %> Access Points) <i class="fa" aria-hidden="false"></i>
                     </a>
                     <div class="collapse" id="ss-<%= i %>">
                         <div class="card card-body mt-2">
