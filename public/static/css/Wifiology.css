@@ -1,6 +1,31 @@
 
 /* This css was created by Bootstrap for their login page example */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 3em;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 3em;
+}
 
+/*
+.footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: 2em;
+  height: 2em;
+  clear:both;
+  padding-top:1em;
+} */
 
 .login-container {
   display: -ms-flexbox;
@@ -57,15 +82,7 @@
   padding-right: 1em;
 }
 
-.footer {
-  position: relative;
-  bottom: 0;
-  width: 100%;
-  margin-top: 2em; /* negative value of footer height */
-  height: 2em;
-  clear:both;
-  padding-top:1em;
-}
+
 
 .list-button-link {
   color: inherit;
@@ -81,8 +98,6 @@
 .list-button-link .fa:before {
   content: "\f13a";
 }
-
-
 
 .wifiology-spinner-body {
   text-align: center;

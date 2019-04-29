@@ -1,4 +1,5 @@
 const { fromRow } = require('../models/wifiologyServiceSet');
+const dataCountersFromRow = require('../models/wifiologyDataCounters').fromRow;
 
 async function insertWifiologyServiceSet(client, newWifiologyServiceSet) {
     let result = await client.query(
@@ -58,51 +59,70 @@ async function selectWifiologyServiceSetsByMeasurementID(client, measurementID) 
     return result.rows.map(r => fromRow(r))
 }
 
-
-/* TODO: Both hard and inaccurate any ways.
-async function selectAggregateDataCountersForServiceSetMeasurements(client, measurementID, serviceSetID){
-    let queryString = `
-    SELECT 
-        mapStationID,
-        SUM(m.managementFrameCount) AS managementFrameCount,
-        SUM(m.associationFrameCount) AS associationFrameCount,
-        SUM(m.reassociationFrameCount) AS reassociationFrameCount,
-        SUM(m.disassociationFrameCount) AS disassociationFrameCount,
-        SUM(m.controlFrameCount) AS controlFrameCount,
-        SUM(m.rtsFrameCount) AS rtsFrameCount,
-        SUM(m.ctsFrameCount) AS ctsFrameCount,
-        SUM(m.ackFrameCount) AS ackFrameCount,
-        SUM(m.dataFrameCount) AS dataFrameCount,
-        SUM(m.dataThroughputIn) AS dataThroughputIn,
-        SUM(m.dataThroughputOut) AS dataThroughputOut,
-        SUM(m.retryFrameCount) AS retryFrameCount,
-        null AS averagePower, -- TODO: weighted average support
-        null AS stdDevPower, -- TODO: weighted variance support
-        MIN(m.lowestRate) AS lowestRate,
-        MAX(m.highestRate) AS highestRate,
-        SUM(m.failedFCSCount) AS failedFCSCount
-    FROM measurementStationMap AS m    
-    GROUP BY m.mapmeasurementid
-    HAVING m.mapmeasurementid IN 
-    ` + placeholderConstructor(measurementIDs);
+async function selectInfraDataCountersForMeasurementsAndServiceSets(client, measurementIDs, serviceSetIDs){
     let result = await client.query(
-        queryString,
-        measurementIDs
+        `SELECT * FROM dataCountersForServiceSetInfraStations($measurementIDs, $serviceSetIDs)`,
+        {measurementIDs, serviceSetIDs}
     );
     if(result.rows.length > 0){
         return result.rows.reduce((acc, row) => {
-            acc[row.mapmeasurementid] = dataCountersFromRow(row);
+            if(!acc.hasOwnProperty(row.servicesetid)){
+                acc[row.servicesetid] = {};
+            }
+            acc[row.servicesetid][row.measurementid] = dataCountersFromRow(row);
             return acc;
         }, {});
     } else {
         return null;
     }
+}
 
-}*/
+async function selectAssociatedStationDataCountersForMeasurementsAndServiceSets(client, measurementIDs, serviceSetIDs){
+    let result = await client.query(
+        `SELECT * FROM dataCountersForServiceSetAssociatedStations($measurementIDs, $serviceSetIDs)`,
+        {measurementIDs, serviceSetIDs}
+    );
+    if(result.rows.length > 0){
+        return result.rows.reduce((acc, row) => {
+            if(!acc.hasOwnProperty(row.servicesetid)){
+                acc[row.servicesetid] = {};
+            }
+            acc[row.servicesetid][row.measurementid] = dataCountersFromRow(row);
+            return acc;
+        }, {});
+    } else {
+        return null;
+    }
+}
+
+async function selectDistinctServiceSetsByNodeIDs(client, nodeIDs){
+    if(nodeIDs && nodeIDs.length > 0){
+        let result = await client.query(
+            `SELECT DISTINCT ss.*, m.measurementNodeID FROM serviceSet AS ss
+             JOIN measurementServiceSet AS mss ON ss.serviceSetID = mss.serviceSetID
+             JOIN measurement AS m ON mss.measurementID = m.measurementID
+             WHERE m.measurementNodeID = ANY($nodeIDs)
+             `,
+            {nodeIDs}
+        );
+        return result.rows.reduce(function(acc, row){
+            if(!acc.hasOwnProperty(row.measurementnodeid)){
+                acc[row.measurementnodeid] = []
+            }
+            acc[row.measurementnodeid].push(fromRow(row));
+            return acc;
+        }, {});
+    } else {
+        return {}
+    }
+}
 
 module.exports = {
     insertWifiologyServiceSet,
     selectWifiologyServiceSetByBssid,
     selectWifiologyServiceSetByServiceSetID,
-    selectWifiologyServiceSetsByMeasurementID
+    selectWifiologyServiceSetsByMeasurementID,
+    selectInfraDataCountersForMeasurementsAndServiceSets,
+    selectAssociatedStationDataCountersForMeasurementsAndServiceSets,
+    selectDistinctServiceSetsByNodeIDs
 };

@@ -1,5 +1,5 @@
 const featureFlagsQueries = require('../queries/featureFlags');
-const { spawnClientFromPool, release, commit, rollback } = require('../core');
+const { transactionWrapper } = require('../core');
 
 
 async function setFeatureFlag(client, key, value) {
@@ -33,14 +33,9 @@ class FeatureFlags{
             return await getFeatureFlag(client, flagKey, defaultValue);
         }
         else{
-            client = await spawnClientFromPool(this.pool, false);
-            try {
+            return await transactionWrapper(this.pool, async function(client){
                 return await getFeatureFlag(client, flagKey, defaultValue);
-            }
-            finally{
-                await release(client);
-            }
-
+            });
         }
     }
 
@@ -49,19 +44,9 @@ class FeatureFlags{
             return await setFeatureFlag(client, flagKey, flagValue);
         }
         else{
-            client = await spawnClientFromPool(this.pool);
-            try {
-                let result = await setFeatureFlag(client, flagKey, flagValue);
-                await commit(client);
-                return result;
-            }
-            catch(e){
-                await rollback(client);
-            }
-            finally{
-                await release(client);
-            }
-
+            return await transactionWrapper(this.pool, async function(client){
+                return await setFeatureFlag(client, flagKey, flagValue);
+            });
         }
     }
 }

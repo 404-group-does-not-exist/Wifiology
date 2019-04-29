@@ -1,7 +1,7 @@
 const winston = require('winston');
 const Sync = require('sync');
 
-const { createPostgresPool, doMigrationUpAsync, spawnClientFromPool, rollback, release, commit } = require('./db/core');
+const { createPostgresPool, doMigrationUpAsync, transactionWrapper } = require('./db/core');
 const { FeatureFlags } = require('./db/data/featureFlags');
 const { cleanUpOldWifiologyMeasurements } = require('./db/data/wifiologyMeasurement');
 
@@ -25,24 +25,14 @@ function runJanitorialDuties(databaseUrl, autoMigrate, maxAgeDays){
         let pool = createPostgresPool(databaseUrl, true);
         let featureFlags = new FeatureFlags(pool);
 
-        if(await featureFlags.getFlag("janitor/cleanUpOldMeasurements", null, true)){
-            let client = await spawnClientFromPool(pool);
-            try {
+        return await transactionWrapper(pool, async function(client){
+            if(await featureFlags.getFlag("janitor/cleanUpOldMeasurements", client, true)){
                 winston.info("Cleaning up old measurements");
                 await cleanUpOldWifiologyMeasurements(client, maxAgeDays);
                 winston.info("Clean up done.");
-                await commit(client);
             }
-            catch(e){
-                await rollback(client);
-            }
-            finally {
-                await release(client);
-                pool.end();
-                winston.info("Janitorial duties completed.");
-            }
-
-        }
+            winston.info("Janitorial duties completed.");
+        });
     });
 }
 

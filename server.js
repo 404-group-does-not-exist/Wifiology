@@ -11,7 +11,6 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const connectPg = require('connect-pg-simple');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const passportAuthSetup = require('./routes/authSetup');
 const routeInstaller = require('./routes/wifiologyRoutes');
 

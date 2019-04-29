@@ -1,5 +1,5 @@
 const { getUserByUserName, getUserByID, getUserByEmailAddress, createNewUser } = require('../db/data/wifiologyUser');
-const { spawnClientFromPool, release, commit, rollback } = require('../db/core');
+const { transactionWrapper, connectionWrapper } = require('../db/core');
 const LocalStrategy = require('passport-local').Strategy;
 
 
@@ -9,8 +9,7 @@ function authSetup(passport, dbPool, featureFlags){
     });
 
     passport.deserializeUser(async function(userID, done){
-        let client = await spawnClientFromPool(dbPool, false);
-        try{
+        return await transactionWrapper(dbPool, async function(client){
             let user = await getUserByID(client, userID);
             if(!user){
                 return done(null, false, {message: "No such user or invalid password."});
@@ -21,19 +20,11 @@ function authSetup(passport, dbPool, featureFlags){
             else {
                 return done(null, user);
             }
-
-        }
-        catch(e){
-            return done(e);
-        }
-        finally {
-            await release(client);
-        }
+        });
     });
 
     async function handleAuth(username, password, done){
-        let client = await spawnClientFromPool(dbPool, false);
-        try{
+        return await transactionWrapper(dbPool, async function(client) {
             let user = await getUserByUserName(client, username);
             if(!user){
                 return done(null, false, {message: "No such user or invalid password."});
@@ -48,21 +39,12 @@ function authSetup(passport, dbPool, featureFlags){
             else {
                 return done(null, user);
             }
-
-        }
-        catch(e){
-            return done(e);
-        }
-        finally {
-            await release(client);
-        }
+        });
     }
 
     async function handleRegister(req, username, password, done){
-        let client = await spawnClientFromPool(dbPool);
         let emailAddress = req.body.emailAddress;
-        try{
-
+        return await transactionWrapper(dbPool, async function(client){
             let userSignupAllowed = await featureFlags.getFlag("users/allowUserSignup", client, true);
 
             if(!userSignupAllowed){
@@ -89,18 +71,9 @@ function authSetup(passport, dbPool, featureFlags){
                 let user = await createNewUser(
                     client, emailAddress, username, password, userData, false, isActive
                 );
-                await commit(client);
                 return done(null, user);
             }
-
-        }
-        catch(e){
-            await rollback(client);
-            return done(e);
-        }
-        finally {
-            await release(client);
-        }
+        });
     }
 
     passport.use(

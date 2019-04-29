@@ -16,9 +16,14 @@ async function getServiceSetByBssid(client, bssid){
     return await wifiologyServiceSetQueries.selectWifiologyServiceSetByBssid(client, bssid);
 }
 
+async function getDistinctServiceSetsByNodeIDs(client, nodeIDs){
+    return await wifiologyServiceSetQueries.selectDistinctServiceSetsByNodeIDs(client, nodeIDs);
+}
+
 
 module.exports = {
     createNewServiceSet,
     getServiceSetByID,
-    getServiceSetByBssid
+    getServiceSetByBssid,
+    getDistinctServiceSetsByNodeIDs
 };
