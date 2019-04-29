@@ -155,6 +155,12 @@ function routesConstructor(app, passport, dbPool){
             };
             res.end(JSON.stringify(response));
         }
+        catch(e){
+            await rollback(client);
+            res.setHeader('Content-Type', 'application/json');
+            res.status(400);
+            res.end(JSON.stringify({error: e}));
+        }
         finally {
             await release(client);
         }
@@ -166,7 +172,7 @@ function routesConstructor(app, passport, dbPool){
             let apiKey = await getApiKeyByID(client, parseInt(req.params.apiKeyID));
             res.setHeader('Content-Type', 'application/json');
             if(!apiKey){
-                rollback(client);
+                await rollback(client);
                 res.status(400);
                 res.end(JSON.stringify({
                     'error': "InvalidAPIKeyID",
@@ -176,7 +182,7 @@ function routesConstructor(app, passport, dbPool){
             }
             else if(!req.user.isAdmin && !(req.user.userID === apiKey.ownerID)){
                 console.log(req.user, apiKey);
-                rollback(client);
+                await rollback(client);
                 res.status(403);
                 res.end(JSON.stringify({
                     'error': "Unprivileged",
@@ -192,6 +198,12 @@ function routesConstructor(app, passport, dbPool){
                     })
                 )
             }
+        }
+        catch(e){
+            await rollback(client);
+            res.setHeader('Content-Type', 'application/json');
+            res.status(400);
+            res.end(JSON.stringify({error: e}));
         }
         finally {
             await release(client);

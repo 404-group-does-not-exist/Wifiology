@@ -11,6 +11,10 @@ function usersServiceConstructor(dbPool){
                 await commit(client);
                 return result;
             }
+            catch(e){
+                await release(client);
+                throw e;
+            }
             finally {
                 await release(client);
             }
@@ -34,6 +38,10 @@ function usersServiceConstructor(dbPool){
                     };
                 }
 
+            }
+            catch(e){
+                await release(client);
+                throw e;
             }
             finally {
                 await release(client);
@@ -61,6 +69,10 @@ function usersServiceConstructor(dbPool){
                 let result = newUser.toApiResponse();
                 await commit(client);
                 return result;
+            }
+            catch(e){
+                await release(client);
+                throw e;
             }
             finally {
                 await release(client);

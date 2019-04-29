@@ -12,6 +12,10 @@ function usersServiceConstructor(dbPool){
                 await commit(client);
                 return result;
             }
+            catch(e){
+                await release(client);
+                throw e;
+            }
             finally {
                 await release(client);
             }
@@ -38,6 +42,10 @@ function usersServiceConstructor(dbPool){
                 let result = key.toApiResponse();
                 await commit(client);
                 return result;
+            }
+            catch(e){
+                await release(client);
+                throw e;
             }
             finally {
                 await release(client);
@@ -67,6 +75,10 @@ function usersServiceConstructor(dbPool){
                 await commit(client);
                 return result;
             }
+            catch(e){
+                await release(client);
+                throw e;
+            }
             finally {
                 await release(client);
             }
@@ -92,6 +104,10 @@ function usersServiceConstructor(dbPool){
                 await wifiologyApiKeyData.deleteApiKey(client, apiKeyID);
                 await commit(client);
                 return {};
+            }
+            catch(e){
+                await release(client);
+                throw e;
             }
             finally {
                 await release(client);
