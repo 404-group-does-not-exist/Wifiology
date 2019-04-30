@@ -386,9 +386,9 @@ function routesConstructor(app, passport, dbPool){
             else {
                 let measurementDataSets;
                 if(channel === null){
-                    measurementDataSets = await getMeasurementDataSetsByNodeID(client, nodeID, 50);
+                    measurementDataSets = await getMeasurementDataSetsByNodeID(client, nodeID, 75);
                 } else {
-                    measurementDataSets = await getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel, 50);
+                    measurementDataSets = await getMeasurementDataSetsByNodeIDAndChannel(client, nodeID, channel, 75);
                 }
                 res.end(JSON.stringify(
                     measurementDataSets.map(measurementDataSetToApiResponse)
@@ -420,7 +420,7 @@ function routesConstructor(app, passport, dbPool){
                     message: `Service Set ID ${serviceSetID} does not correspond to a real service set.`
                 }))
             } else {
-                let serviceSetData = await getServiceSetRecentData(client, serviceSetID, nodeIDs);
+                let serviceSetData = await getServiceSetRecentData(client, serviceSetID, nodeIDs, 75);
                 let finalized = {
                     measurements: serviceSetData.measurements.map(m => m.toApiResponse()),
                     infrastructureMacAddresses: serviceSetData.infrastructureMacAddresses,
