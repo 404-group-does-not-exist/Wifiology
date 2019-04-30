@@ -93,7 +93,7 @@ async function selectAggregateWifiologyServiceSetInfraMacAddresses(client, measu
 
 async function selectServiceSetInfraMacsOverMeaurements(client, serviceSetID, measurementIDs){
     let result = await client.query(
-        `SELECT s.macAddress, i.mapServiceSetID
+        `SELECT s.macAddress, i.mapServiceSetID, i.measurementID
          FROM station AS s
          JOIN infrastructureStationServiceSetMap AS i ON s.stationid = i.mapstationid
          WHERE i.mapServiceSetID = $serviceSetID AND i.measurementID = ANY($measurementIDs)
@@ -112,7 +112,7 @@ async function selectServiceSetInfraMacsOverMeaurements(client, serviceSetID, me
 
 async function selectServiceSetAssociatedMacsOverMeaurements(client, serviceSetID, measurementIDs){
     let result = await client.query(
-            `SELECT s.macAddress, a.associatedServiceSetID
+            `SELECT s.macAddress, a.associatedServiceSetID, a.measurementID
              FROM station AS s
                     JOIN associationStationServiceSetMap AS a ON s.stationid = a.associatedstationid
              WHERE a.associatedServiceSetID = $serviceSetID AND a.measurementID = ANY($measurementIDs)

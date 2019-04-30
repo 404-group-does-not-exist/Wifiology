@@ -5,7 +5,7 @@ const {
 const { getApiKeysByOwnerID, createNewApiKey, getApiKeyByID, deleteApiKey } = require("../db/data/wifiologyApiKey");
 const { getAllUsers, getUserByID } = require('../db/data/wifiologyUser');
 const { getWifiologyNodeByName, createNewWifiologyNode, getNodesAvailableToUser } = require('../db/data/wifiologyNode');
-const { getDistinctServiceSetsByNodeIDs, getServiceSetByID } = require('../db/data/wifiologyServiceSet');
+const { getDistinctServiceSetsByNodeIDs, getServiceSetByID, getServiceSetRecentData } = require('../db/data/wifiologyServiceSet');
 const { getServiceSetBusyStatusFromJitter } = require('../db/data/wifiologyServiceSetJitterMeasurement');
 const { getDatabaseInfo } = require('../db/data/wifiologyInfo');
 const { version } = require("../info");
@@ -327,8 +327,6 @@ function routesConstructor(app, passport, dbPool){
                 )
             );
         });
-
-
     }
 
     async function serviceSetGetHandler(req, res){
@@ -348,7 +346,7 @@ function routesConstructor(app, passport, dbPool){
                             title: `Service Set ${serviceSetID}`,
                             serviceSet,
                             busyData,
-                            scriptToRun: `wifiologyAllSetup();`
+                            scriptToRun: `wifiologyAllSetup(); wifiologyServiceSetSetup(${serviceSetID}, '/api/internal');`
                         }
                     )
                 )
@@ -379,6 +377,7 @@ function routesConstructor(app, passport, dbPool){
             res.setHeader('Content-Type', 'application/json');
             let node = await wifiologyNodesData.getWifiologyNodeByID(client, nodeID);
             if(!node){
+                res.status(404);
                 res.end(JSON.stringify({
                     error: 'InvalidNodeID',
                     message: `Node ID ${nodeID} does not correspond to a real node.`
@@ -394,6 +393,44 @@ function routesConstructor(app, passport, dbPool){
                 res.end(JSON.stringify(
                     measurementDataSets.map(measurementDataSetToApiResponse)
                 ));
+            }
+        });
+    }
+
+    async function serviceSetMeasurementAPI(req, res){
+        let serviceSetID = parseInt(req.params.serviceSetID);
+
+        function convertDataCounterMap(dcm){
+            let newMap = {};
+            for(let mID of Object.keys(dcm)){
+                newMap[mID] = dcm[mID].toApiResponse();
+            }
+            return newMap;
+        }
+
+        return await connectionWrapper(dbPool, async function(client){
+            let nodesAvailable = await getNodesAvailableToUser(client, req.user.userID, 9999, 0);
+            let nodeIDs = nodesAvailable.map(n => n.nodeID);
+            res.setHeader('Content-Type', 'application/json');
+            let serviceSet = await getServiceSetByID(client, serviceSetID);
+            if(!serviceSet){
+                res.status(404);
+                res.end(JSON.stringify({
+                    error: 'InvalidServiceSetID',
+                    message: `Service Set ID ${serviceSetID} does not correspond to a real service set.`
+                }))
+            } else {
+                let serviceSetData = await getServiceSetRecentData(client, serviceSetID, nodeIDs);
+                let finalized = {
+                    measurements: serviceSetData.measurements.map(m => m.toApiResponse()),
+                    infrastructureMacAddresses: serviceSetData.infrastructureMacAddresses,
+                    infrastructureMacAddressManufacturerCounts: serviceSetData.infrastructureMacAddressManufacturerCounts,
+                    associatedMacAddressManufacturerCounts: serviceSetData.associatedMacAddressManufacturerCounts,
+                    associatedMacAddresses: serviceSetData.associatedMacAddresses,
+                    infrastructureDataCounters: convertDataCounterMap(serviceSetData.infrastructureDataCounters),
+                    associatedStationsDataCounters: convertDataCounterMap(serviceSetData.associatedStationsDataCounters)
+                };
+                res.end(JSON.stringify(finalized));
             }
         });
     }
@@ -431,9 +468,9 @@ function routesConstructor(app, passport, dbPool){
     app.get('/serviceSets/:serviceSetID', authenticatedAsyncHandler(serviceSetGetHandler));
 
     app.get('/api/internal/nodes/:nodeID/measurements', authenticatedAsyncHandler(secretNodeMeasurementsAPI));
+    app.get('/api/internal/serviceSets/:serviceSetID/measurements', authenticatedAsyncHandler(serviceSetMeasurementAPI));
     app.post('/api/internal/users/apiKey', authenticatedAsyncHandler(apiKeyCreatePostHandler));
     app.delete('/api/internal/users/apiKey/:apiKeyID', authenticatedAsyncHandler(apiKeyDeleteHandler));
-
 }
 
 module.exports = routesConstructor;

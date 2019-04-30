@@ -33,6 +33,14 @@ async function selectWifiologyMeasurementByID(client, measurementID){
     }
 }
 
+async function selectWifiologyMeasurementsByIDs(client, measurementIDs){
+    let result = await client.query(
+        "SELECT * FROM measurement WHERE measurementID = ANY($measurementIDs)",
+        {measurementIDs}
+    );
+    return result.rows.map(r => fromRow(r));
+}
+
 async function selectAllWifiologyMeasurementsForNode(client, nodeID, limit, priorLastMeasurementID) {
     let queryString = "SELECT * FROM measurement WHERE measurementNodeID = $nodeID ";
     params = {nodeID, limit};
@@ -128,5 +136,6 @@ module.exports = {
     selectAggregateDataCountersForWifiologyMeasurements,
     deleteNodeOldWifiologyMeasurements,
     selectWifiologyMeasurementByNodeIDChannelAndStartTime,
-    selectWifiologyMeasurementByUniqueAttributes
+    selectWifiologyMeasurementByUniqueAttributes,
+    selectWifiologyMeasurementsByIDs
 };

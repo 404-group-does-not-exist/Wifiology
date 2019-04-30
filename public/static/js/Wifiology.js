@@ -1,3 +1,67 @@
+var wifiologyCommon = {
+    dataSetCounterPerSecondExtractor: function(dataCounterName){
+        function applicator(datum){
+            return wifiologyCommon.counterPerSecondExtractor(dataCounterName, datum.measurement.dataCounters, datum.measurement);
+        }
+        return applicator;
+    },
+    counterPerSecondExtractor: function(dataCounterName, counter, measurement){
+        return parseInt(counter[dataCounterName] || 0)/measurement.measurementDuration;
+    },
+    dataSetCounterExtractor: function(dataCounterName){
+        function applicator(datum){
+            return wifiologyCommon.counterExtractor(dataCounterName, datum.measurement.dataCounters);
+        }
+        return applicator;
+    },
+    counterExtractor: function(dataCounterName, counter){
+        return parseFloat(counter[dataCounterName] || 0);
+    },
+    generateTimestampForMeasurement: function(m){
+        let startTime = new Date(m.measurementStartTime);
+        return startTime.toLocaleTimeString();
+    },
+    generateTimestamp: function(datum){
+        return wifiologyCommon.generateTimestampForMeasurement(datum.measurement);
+    },
+    generateDataset: function(counter, measurementData, customLabel=null, fill=false){
+        var label;
+        var data;
+        if(wifiologyCommon.dontDivideByDuration.includes(counter)){
+            data = measurementData.map(wifiologyCommon.dataSetCounterExtractor(counter));
+            label = counter;
+        } else {
+            data = measurementData.map(wifiologyCommon.dataSetCounterPerSecondExtractor(counter));
+            label = counter + ' per second'
+        }
+        return {
+            label: customLabel || label,
+            data: data,
+            fill: fill
+        };
+    },
+    setupAutomaticUpdateBox: function(selector, populateLatestData, updateTimeout=30000){
+        var automaticUpdateSelector = $(selector);
+        var timedEvent = null;
+
+        automaticUpdateSelector.click(function(){
+            if(timedEvent){
+                clearTimeout(timedEvent);
+            }
+            if(automaticUpdateSelector.clicked){
+                timedEvent = setTimeout(function(){
+                    populateLatestData();
+
+                }, updateTimeout);
+            }
+        });
+    },
+    dontDivideByDuration: [
+        'averagePower', 'stdDevPower', 'lowestRate', 'highestRate'
+    ]
+};
+
+
 function wifiologyAllSetup(){
     var timer = null;
     var modal = null;
@@ -17,6 +81,7 @@ function wifiologyAllSetup(){
     });
 }
 
+
 function wifiologyNodesSetup(){
     $(document).ready(function(){
         $(".nodes-table-datarow").click(function(){
@@ -28,6 +93,7 @@ function wifiologyNodesSetup(){
     });
 }
 
+
 function wifiologyNodeSetup(nodeID, baseApiUrl){
     var lastMeasurementData = null;
     var currentChannel = null;
@@ -36,18 +102,6 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
     var latestThroughPut = null;
     var uniqueStationCount = null;
     var lastRefreshElement = null;
-
-    function framesPerSecond(dataCounterName){
-        function applicator(datum){
-            return parseInt(datum.measurement.dataCounters[dataCounterName])/datum.measurement.measurementDuration;
-        }
-        return applicator;
-    }
-
-    function generateTimestamp(datum){
-        let startTime = new Date(datum.measurement.measurementStartTime);
-        return startTime.toLocaleTimeString();
-    }
 
     function uniqueStationCounter(datum){
         return datum.stations.length;
@@ -111,11 +165,6 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                )
            );
         }
-        /*for(var bssid in serviceSets){
-            tableBody.append(
-                "<tr><td>" +  bssid + "</td><td>" + serviceSets[bssid].networkName + "</td></tr>"
-            )
-        }*/
     }
 
 
@@ -138,24 +187,33 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                     {
                         type: 'line',
                         data: {
-                            labels: data.map(generateTimestamp),
+                            labels: data.map(wifiologyCommon.generateTimestamp),
                             datasets: [
                                 {
                                     label: 'Management Frame Count Per Second',
-                                    data: data.map(framesPerSecond('managementFrameCount')),
+                                    data: data.map(wifiologyCommon.dataSetCounterPerSecondExtractor('managementFrameCount')),
                                     borderColor: '#ff6d6d',
+                                    pointBorderColor: '#ff3d3d',
+                                    pointBackgroundColor: '#ff6d6d',
+                                    backgroundColor: '#ff8d8d',
                                     fill: false
                                 },
                                 {
                                     label: 'Data Frame Count Per Second',
-                                    data: data.map(framesPerSecond('dataFrameCount')),
+                                    data: data.map(wifiologyCommon.dataSetCounterPerSecondExtractor('dataFrameCount')),
                                     borderColor: '#6470ef',
+                                    pointBorderColor: '#5460df',
+                                    pointBackgroundColor: '#6470ef',
+                                    backgroundColor: '#8490ff',
                                     fill: false
                                 },
                                 {
                                     label: 'Control Frame Count Per Second',
-                                    data: data.map(framesPerSecond("controlFrameCount")),
+                                    data: data.map(wifiologyCommon.dataSetCounterPerSecondExtractor("controlFrameCount")),
                                     borderColor: '#64ef87',
+                                    pointBorderColor: '#54df77',
+                                    pointBackgroundColor: '#64ef87',
+                                    backgroundColor: '#84ff97',
                                     fill: false
                                 }
                             ],
@@ -177,12 +235,15 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                     {
                         type: 'line',
                         data: {
-                            labels: data.map(generateTimestamp),
+                            labels: data.map(wifiologyCommon.generateTimestamp),
                             datasets: [
                                 {
                                     label: 'Throughput B/s',
-                                    data: data.map(framesPerSecond('dataThroughputIn')),
+                                    data: data.map(wifiologyCommon.dataSetCounterPerSecondExtractor('dataThroughputIn')),
                                     borderColor: '#ff6d6d',
+                                    pointBorderColor: '#ff3d3d',
+                                    pointBackgroundColor: '#ff6d6d',
+                                    backgroundColor: '#ff8d8d',
                                     fill: true
                                 }
                             ],
@@ -204,12 +265,15 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
                     {
                         type: 'line',
                         data: {
-                            labels: data.map(generateTimestamp),
+                            labels: data.map(wifiologyCommon.generateTimestamp),
                             datasets: [
                                 {
                                     label: 'Unique Station Count',
                                     data: data.map(uniqueStationCounter),
                                     borderColor: '#6470ef',
+                                    pointBorderColor: '#5460df',
+                                    pointBackgroundColor: '#6470ef',
+                                    backgroundColor: '#8490ff',
                                     fill: true
                                 }
                             ],
@@ -241,23 +305,6 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
         );
     }
 
-    function setupAutomaticUpdateBox(){
-        var automaticUpdateSelector = $("#automatic-update");
-        var timedEvent = null;
-
-        automaticUpdateSelector.click(function(){
-            if(timedEvent){
-                clearTimeout(timedEvent);
-            }
-            if(automaticUpdateSelector.clicked){
-                timedEvent = setTimeout(function(){
-                    populateLatestData(currentChannel);
-
-                }, 30000);
-            }
-        });
-    }
-
     $(document).ready(function(){
         latestFrameCounts = new Chart(
             $("#node-recent-frame-counts-graph"),
@@ -279,7 +326,9 @@ function wifiologyNodeSetup(nodeID, baseApiUrl){
         );
         lastRefreshElement = $("#last-refresh-time");
         setupChannelSelector();
-        setupAutomaticUpdateBox();
+        wifiologyCommon.setupAutomaticUpdateBox(
+            "#automatic-update", function(){ populateLatestData(currentChannel) }
+        );
         populateLatestData();
     });
 }
@@ -293,39 +342,6 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
     var lastRefreshElement = null;
     var dataCounterCheckboxes = null;
     var selectedCounters = null;
-    var datasets = null;
-    var i = null;
-    var currentData = null;
-    var currentLabel = null;
-
-    var dontDivideByDuration = [
-        'averagePower', 'stdDevPower', 'lowestRate', 'highestRate'
-    ];
-
-    function dataExtractorPerSecond(dataCounterName){
-        function applicator(datum){
-            console.log(datum.measurement.dataCounters);
-            return parseInt(datum.measurement.dataCounters[dataCounterName])/datum.measurement.measurementDuration;
-        }
-        return applicator;
-    }
-
-    function dataExtractor(dataCounterName){
-        function applicator(datum){
-            console.log(datum.measurement.dataCounters);
-            return parseFloat(datum.measurement.dataCounters[dataCounterName]);
-        }
-        return applicator;
-    }
-
-    function generateTimestamp(datum){
-        let startTime = new Date(datum.measurement.measurementStartTime);
-        return startTime.toLocaleTimeString();
-    }
-
-    function uniqueStationCounter(datum){
-        return datum.stations.length;
-    }
 
     function cleanupCharts(){
         latestDataChart.destroy();
@@ -344,39 +360,17 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
         return selectedCounters;
     }
 
-    function generateDatasets(counters){
-        datasets = [];
-        i = 0;
-        for(counter of counters){
-            if(dontDivideByDuration.includes(counter)){
-                currentData = lastMeasurementData.map(dataExtractor(counter));
-                currentLabel = counter;
-            } else {
-                currentData = lastMeasurementData.map(dataExtractorPerSecond(counter));
-                currentLabel = counter + ' per second'
-            }
-            datasets.push({
-                label: currentLabel,
-                data: currentData,
-                fill: false
-            });
-            i++;
-        }
-        return datasets;
-    }
-
     function updateChart(channel){
         cleanupCharts();
         selectedCounters = getSelectedCheckboxValues();
-        datasets = generateDatasets(selectedCounters);
 
         latestDataChart = new Chart(
             $("#node-recent-frame-counts-graph"),
             {
                 type: 'line',
                 data: {
-                    labels: lastMeasurementData.map(generateTimestamp),
-                    datasets: datasets
+                    labels: lastMeasurementData.map(wifiologyCommon.generateTimestamp),
+                    datasets: selectedCounters.map(c  => wifiologyCommon.generateDataset(c, lastMeasurementData))
                 },
                 options: {
                     title: {
@@ -426,23 +420,6 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
         );
     }
 
-    function setupAutomaticUpdateBox(){
-        var automaticUpdateSelector = $("#automatic-update");
-        var timedEvent = null;
-
-        automaticUpdateSelector.click(function(){
-            if(timedEvent){
-                clearTimeout(timedEvent);
-            }
-            if(automaticUpdateSelector.clicked){
-                timedEvent = setTimeout(function(){
-                    populateLatestData(currentChannel);
-
-                }, 30000);
-            }
-        });
-    }
-
     $(document).ready(function(){
         latestDataChart = new Chart(
             $("#node-recent-frame-counts-graph"),
@@ -458,10 +435,13 @@ function wifiologyNodeChartSetup(nodeID, baseApiUrl){
 
         lastRefreshElement = $("#last-refresh-time");
         setupChannelSelector();
-        setupAutomaticUpdateBox();
+        wifiologyCommon.setupAutomaticUpdateBox(
+            "#automatic-update", function(){ populateLatestData(currentChannel) }
+        );
         populateLatestData();
     });
 }
+
 
 function wifiologyUserSetup(viewingUserID, runningAsUserID, baseApiUrl){
     var keyCreationForm;
@@ -516,5 +496,286 @@ function wifiologyUserSetup(viewingUserID, runningAsUserID, baseApiUrl){
         keyCreationForm = $("#createApiKeyForm");
         setupKeyCreationForm();
         setupKeyDeletion();
+    });
+}
+
+
+function wifiologyServiceSetSetup(serviceSetID, baseApiUrl){
+    var latestFrameCounts;
+    var latestThroughput;
+    var uniqueStationCount;
+    var lastRefreshElement;
+    var infraDeviceManufacturerChart;
+    var associatedDeviceManufacturerChart;
+    var channelsElement;
+    var channels;
+    var latestData = null;
+
+    function populateLatestData(){
+        var dataAPI = baseApiUrl + "/serviceSets/" + serviceSetID + "/measurements";
+        $.getJSON(
+            dataAPI,
+            {},
+            function(data){
+                console.log(data);
+                latestData = data;
+                cleanupCharts();
+                updateLatestFrameCountsChart(data);
+                updateThroughputChart(data);
+                updateUniqueStationsChart(data);
+                updateChannels(data);
+                updateManufacturerCharts(data);
+                lastRefreshElement.text(" (Last Refresh Time: " + new Date().toLocaleTimeString() + ") ");
+            }
+        );
+    }
+
+    function cleanupCharts(){
+        latestFrameCounts.destroy();
+        latestThroughput.destroy();
+        uniqueStationCount.destroy();
+        infraDeviceManufacturerChart.destroy();
+        associatedDeviceManufacturerChart.destroy();
+    }
+
+    function updateChannels(data){
+        var i;
+        var channel;
+        channelsElement.empty();
+        channels = [];
+        for(i = 0; i < data.measurements.length; i++){
+            channel = parseInt(data.measurements[i].channel);
+            if(!channels.includes(channel)){
+                channels.push(channel);
+            }
+        }
+        channels.sort();
+        for(i = 0; i < channels.length; i++){
+            if(i === 0){
+                channelsElement.append(channels[i])
+            } else {
+                channelsElement.append(", " + channels[i]);
+            }
+        }
+    }
+
+    function updateManufacturerCharts(data){
+        infraDeviceManufacturerChart = new Chart(
+            $("#service-set-infra-device-manufacturer-chart"),
+            {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: Object.values(data.infrastructureMacAddressManufacturerCounts)
+                    }],
+                    labels: Object.keys(data.infrastructureMacAddressManufacturerCounts)
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Infrastructure Devices By Manufacturer'
+                    }
+                }
+            }
+        );
+        associatedDeviceManufacturerChart = new Chart(
+            $("#service-set-associated-device-manufacturer-chart"),
+            {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: Object.values(data.associatedMacAddressManufacturerCounts)
+                    }],
+                    labels: Object.keys(data.associatedMacAddressManufacturerCounts)
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Associated Devices By Manufacturer'
+                    }
+                }
+            }
+        );
+    }
+
+    function updateLatestFrameCountsChart(data){
+        function extractCounters(counterName){
+            return data.measurements.map(function(m){
+                return wifiologyCommon.counterPerSecondExtractor(counterName, data.associatedStationsDataCounters[parseInt(m.measurementID)] || {}, m)
+                    + wifiologyCommon.counterPerSecondExtractor(counterName, data.infrastructureDataCounters[parseInt(m.measurementID)] || {}, m);
+            });
+        }
+
+
+        latestFrameCounts = new Chart(
+            $("#service-set-recent-frame-counts-graph"),
+            {
+                type: 'line',
+                data: {
+                    labels: data.measurements.map(wifiologyCommon.generateTimestampForMeasurement),
+                    datasets: [
+                        {
+                            label: 'Management Frame Count Per Second',
+                            data: extractCounters('managementFrameCount'),
+                            borderColor: '#ff6d6d',
+                            pointBorderColor: '#ff3d3d',
+                            pointBackgroundColor: '#ff6d6d',
+                            backgroundColor: '#ff8d8d',
+                            fill: false
+                        },
+                        {
+                            label: 'Data Frame Count Per Second',
+                            data: extractCounters('dataFrameCount'),
+                            borderColor: '#6470ef',
+                            pointBorderColor: '#5460df',
+                            pointBackgroundColor: '#6470ef',
+                            backgroundColor: '#8490ff',
+                            fill: false
+                        },
+                        {
+                            label: 'Control Frame Count Per Second',
+                            data: extractCounters("controlFrameCount"),
+                            borderColor: '#64ef87',
+                            pointBorderColor: '#54df77',
+                            pointBackgroundColor: '#64ef87',
+                            backgroundColor: '#84ff97',
+                            fill: false
+                        }
+                    ],
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Latest Frame Count Data'
+                    }
+                }
+            },
+
+        );
+    }
+
+    function updateThroughputChart(data){
+        function extractCounters(counterName){
+            return data.measurements.map(function(m){
+                return wifiologyCommon.counterPerSecondExtractor(counterName, data.associatedStationsDataCounters[parseInt(m.measurementID)] || {}, m)
+                    + wifiologyCommon.counterPerSecondExtractor(counterName, data.infrastructureDataCounters[parseInt(m.measurementID)] || {}, m);
+            });
+        }
+
+        latestThroughput = new Chart(
+            $("#service-set-recent-throughput-graph"),
+            {
+                type: 'line',
+                data: {
+                    labels: data.measurements.map(wifiologyCommon.generateTimestampForMeasurement),
+                    datasets: [
+                        {
+                            label: 'Throughput B/s',
+                            data: extractCounters('dataThroughputIn'),
+                            borderColor: '#ff6d6d',
+                            pointBorderColor: '#ff3d3d',
+                            pointBackgroundColor: '#ff6d6d',
+                            backgroundColor: '#ff8d8d',
+                            fill: true
+                        }
+                    ],
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Latest Throughput Data'
+                    }
+                }
+            },
+
+
+        );
+    }
+
+    function updateUniqueStationsChart(data){
+        function extractUniqueStationsCount(key){
+            return data.measurements.map(
+                function(m){
+                    return (data[key][parseInt(m.measurementID)] || []).length
+                }
+            )
+        }
+        uniqueStationCount = new Chart(
+            $("#service-set-unique-associated-station-graph"),
+            {
+                type: 'line',
+                data: {
+                    labels: data.measurements.map(wifiologyCommon.generateTimestampForMeasurement),
+                    datasets: [
+                        {
+                            label: 'Unique Associated Station Count',
+                            data: extractUniqueStationsCount('associatedMacAddresses'),
+                            borderColor: '#6470ef',
+                            pointBorderColor: '#5460df',
+                            pointBackgroundColor: '#6470ef',
+                            backgroundColor: '#8490ff',
+                            fill: false
+                        },
+                        {
+                            label: 'Unique Infrastructure Station Count',
+                            data: extractUniqueStationsCount('infrastructureMacAddresses'),
+                            borderColor: '#ff6d6d',
+                            pointBorderColor: '#ff3d3d',
+                            pointBackgroundColor: '#ff6d6d',
+                            backgroundColor: '#ff8d8d',
+                            fill: false
+                        }
+                    ],
+                },
+                options: {
+                    title: {
+                        display: true,
+                        responsive: true,
+                        text: 'Unique Station Count'
+                    }
+                }
+            },
+        );
+    }
+
+    $(document).ready(function(){
+        latestFrameCounts = new Chart(
+            $("#service-set-recent-frame-counts-graph"),
+            {
+                type: 'line'
+            }
+        );
+        latestThroughput = new Chart(
+            $("#service-set-recent-throughput-graph"),
+            {
+                type: 'line'
+            }
+        );
+        uniqueStationCount = new Chart(
+            $("#service-set-unique-associated-station-graph"),
+            {
+                type: 'line'
+            }
+        );
+        infraDeviceManufacturerChart = new Chart(
+            $("#service-set-infra-device-manufacturer-chart"),
+            {
+                type: 'doughnut'
+            }
+        );
+        associatedDeviceManufacturerChart = new Chart(
+            $("#service-set-associated-device-manufacturer-chart"),
+            {
+                type: 'doughnut'
+            }
+        );
+        lastRefreshElement = $("#last-refresh-time");
+        channelsElement = $("#channels-info");
+        wifiologyCommon.setupAutomaticUpdateBox("#automatic-update", populateLatestData);
+        populateLatestData();
     });
 }
