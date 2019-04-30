@@ -70,9 +70,22 @@ async function getServiceSetRecentData(client, serviceSetID, nodeIDs, limit=500)
     let infraDataCounters = await wifiologyServiceSetQueries.selectInfraDataCountersForMeasurementsAndServiceSets(
          client, measurementIDs, [serviceSetID]
     );
+    if(infraDataCounters){
+        infraDataCounters = infraDataCounters[serviceSetID] || {}
+    }
+    else {
+        infraDataCounters = {};
+    }
     let associatedDataCounters = await wifiologyServiceSetQueries.selectAssociatedStationDataCountersForMeasurementsAndServiceSets(
          client, measurementIDs, [serviceSetID]
     );
+    if(associatedDataCounters){
+        associatedDataCounters = associatedDataCounters[serviceSetID] || {}
+    }
+    else {
+        associatedDataCounters = {};
+    }
+
     let measurements = await wifiologyMeasurementQueries.selectWifiologyMeasurementsByIDs(
          client, measurementIDs
     );
@@ -82,8 +95,8 @@ async function getServiceSetRecentData(client, serviceSetID, nodeIDs, limit=500)
         infrastructureMacAddressManufacturerCounts: infraMacManufacturerCounts,
         associatedMacAddressManufacturerCounts: associatedMacManufacturerCounts,
         associatedMacAddresses: associatedMacs,
-        infrastructureDataCounters: infraDataCounters[serviceSetID] || {},
-        associatedStationsDataCounters: associatedDataCounters[serviceSetID] || {}
+        infrastructureDataCounters: infraDataCounters,
+        associatedStationsDataCounters: associatedDataCounters
     }
 }
 
